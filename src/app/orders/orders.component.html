@@ -1,0 +1,162 @@
+<!-- Orders Management Page -->
+<section class="orders-page">
+  <!-- Filters Top -->
+  <div class="filters">
+    <div class="field">
+      <label for="search">Search</label>
+      <input id="search" type="text" [(ngModel)]="searchQuery" placeholder="Search by ID, client, address" />
+    </div>
+
+    <div class="field">
+      <label for="status">Status</label>
+      <select id="status" [(ngModel)]="statusFilter">
+        <option value="">All</option>
+        <option value="New">New</option>
+        <option value="Assigned">Assigned</option>
+        <option value="On The Way">On The Way</option>
+        <option value="Delivered">Delivered</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="date">Date</label>
+      <select id="date" [(ngModel)]="dateFilter">
+        <option value="">All</option>
+        <option value="today">Today</option>
+        <option value="week">This Week</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Main Layout: List + Details -->
+  <div class="orders-layout">
+    <!-- Orders Table -->
+    <div class="panel panel--list">
+      <div class="panel-header">
+        <h3>Orders</h3>
+        <small>{{ filteredOrders.length }} results</small>
+      </div>
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Order ID</th>
+              <th>Client</th>
+              <th>Type</th>
+              <th>Status</th>
+              <th>Time</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let o of filteredOrders" (click)="selectOrder(o)" [class.is-active]="o === selectedOrder">
+              <td class="mono">{{ o.id }}</td>
+              <td>
+                <div class="client">
+                  <div class="client__name">{{ o.client.name }}</div>
+                  <small class="muted">{{ o.client.address }}</small>
+                </div>
+              </td>
+              <td>
+                <span class="badge badge--type" [class.is-prescription]="o.type === 'Prescription'">{{ o.type }}</span>
+              </td>
+              <td>
+                <span class="badge"
+                  [ngClass]="{
+                    'badge--new': o.status === 'New',
+                    'badge--assigned': o.status === 'Assigned',
+                    'badge--ontheway': o.status === 'On The Way',
+                    'badge--delivered': o.status === 'Delivered'
+                  }"
+                >{{ o.status }}</span>
+              </td>
+              <td class="mono">{{ o.time }}</td>
+              <td>
+                <button type="button" class="btn btn--ghost" (click)="$event.stopPropagation(); selectOrder(o)">View</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Details Panel -->
+    <div class="panel panel--details" *ngIf="selectedOrder as sel">
+      <div class="panel-header">
+        <h3>Order Details</h3>
+        <small class="mono">{{ sel.id }}</small>
+      </div>
+
+      <div class="details">
+        <!-- Client Info -->
+        <div class="card">
+          <h4>Client</h4>
+          <div class="grid-2">
+            <div>
+              <div class="label">Name</div>
+              <div class="value">{{ sel.client.name }}</div>
+            </div>
+            <div>
+              <div class="label">Phone</div>
+              <div class="value">{{ sel.client.phone }}</div>
+            </div>
+          </div>
+          <div class="label">Address</div>
+          <div class="value">{{ sel.client.address }}</div>
+        </div>
+
+        <!-- Order Content -->
+        <div class="card">
+          <h4>Order Content</h4>
+          <ul class="items">
+            <li *ngFor="let it of sel.items">{{ it }}</li>
+          </ul>
+        </div>
+
+        <!-- Prescription Preview -->
+        <div class="card" *ngIf="sel.prescriptionImageUrl">
+          <h4>Prescription</h4>
+          <img [src]="sel.prescriptionImageUrl" alt="Prescription" class="rx-img" />
+        </div>
+
+        <!-- Timeline -->
+        <div class="card">
+          <h4>Timeline</h4>
+          <div class="timeline">
+            <div class="step" [class.done]="true">Received</div>
+            <div class="step" [class.done]="sel.status === 'Assigned' || sel.status === 'On The Way' || sel.status === 'Delivered'">Assigned</div>
+            <div class="step" [class.done]="sel.status === 'On The Way' || sel.status === 'Delivered'">On The Way</div>
+            <div class="step" [class.done]="sel.status === 'Delivered'">Delivered</div>
+          </div>
+        </div>
+
+        <!-- Assign Delivery -->
+        <div class="card">
+          <h4>Assign Delivery</h4>
+          <div class="grid-2">
+            <div>
+              <label for="driver">Driver</label>
+              <select id="driver" [(ngModel)]="selectedDriverId">
+                <option [ngValue]="null">Select driver</option>
+                <option *ngFor="let d of drivers" [ngValue]="d.id">
+                  {{ d.name }} • {{ d.area }} • {{ d.available ? 'Available' : 'Busy' }}
+                </option>
+              </select>
+            </div>
+            <div class="assign-actions">
+              <button type="button" class="btn btn--primary" (click)="assignDriver()">Assign</button>
+            </div>
+          </div>
+          <!-- TODO: Call OrdersService.assignDriver(orderId, driverId) and refresh list -->
+        </div>
+
+        <!-- Map -->
+        <div class="card card--map">
+          <h4>Map</h4>
+          <div id="ordersMap" class="map"></div>
+          <!-- TODO: Real-time tracking via WebSocket to update driver location -->
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

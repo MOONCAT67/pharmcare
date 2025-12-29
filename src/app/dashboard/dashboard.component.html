@@ -1,0 +1,122 @@
+<!-- Pharmacy Admin Home Dashboard -->
+<section class="dashboard">
+    <!-- Top: KPI Cards -->
+    <div class="kpi-grid">
+      <div class="kpi-card" *ngFor="let k of kpis">
+        <div class="kpi-icon"><i class="bi" [ngClass]="k.icon" aria-hidden="true"></i></div>
+        <div class="kpi-content">
+          <div class="kpi-value">{{ k.value | number }}</div>
+          <div class="kpi-label">{{ k.label }}</div>
+        </div>
+        <div class="kpi-delta" *ngIf="k.delta !== undefined" [class.positive]="(k.delta || 0) >= 0" [class.negative]="(k.delta || 0) < 0">
+          <i class="bi" [ngClass]="(k.delta || 0) >= 0 ? 'bi-arrow-up-right' : 'bi-arrow-down-right'" aria-hidden="true"></i>
+          <span>{{ k.delta }}%</span>
+        </div>
+      </div>
+    </div>
+  
+    <!-- Charts Row -->
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="card-header">
+          <h3>Sales Today</h3>
+          <small>Hourly</small>
+        </div>
+        <!-- Lightweight inline SVG sparkline as placeholder -->
+        <svg class="sparkline" viewBox="0 0 280 80" preserveAspectRatio="none" aria-label="Sales Today Sparkline">
+          <defs>
+            <linearGradient id="grad-green" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%" stop-color="#6BCF9B" stop-opacity="0.6" />
+              <stop offset="100%" stop-color="#6BCF9B" stop-opacity="0.05" />
+            </linearGradient>
+          </defs>
+          <path [attr.d]="salesTodayPath" class="sparkline__line"></path>
+          <path [attr.d]="salesTodayPath + ' L 280 80 L 0 80 Z'" class="sparkline__fill"></path>
+        </svg>
+        <!-- TODO: Replace with Chart.js/ApexCharts service integration -->
+      </div>
+  
+      <div class="chart-card">
+        <div class="card-header">
+          <h3>Weekly Sales</h3>
+          <small>Last 7 days</small>
+        </div>
+        <svg class="sparkline" viewBox="0 0 280 80" preserveAspectRatio="none" aria-label="Weekly Sales Sparkline">
+          <path [attr.d]="weeklySalesPath" class="sparkline__line"></path>
+          <path [attr.d]="weeklySalesPath + ' L 280 80 L 0 80 Z'" class="sparkline__fill"></path>
+        </svg>
+        <!-- TODO: Replace with Chart.js/ApexCharts service integration -->
+      </div>
+    </div>
+  
+    <!-- Orders + Map + Notifications -->
+    <div class="lower-grid">
+      <!-- Recent Orders Table -->
+      <div class="panel panel--table">
+        <div class="panel-header"><h3>Recent Orders</h3></div>
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Client Name</th>
+                <th>Order Type</th>
+                <th>Status</th>
+                <th>Time</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let o of recentOrders">
+                <td class="client">{{ o.clientName }}</td>
+                <td>
+                  <span class="badge badge--type" [class.is-prescription]="o.orderType === 'Prescription'">{{ o.orderType }}</span>
+                </td>
+                <td>
+                  <span class="badge" [ngClass]="{
+                    'badge--new': o.status === 'New',
+                    'badge--assigned': o.status === 'Assigned',
+                    'badge--delivered': o.status === 'Delivered'
+                  }">{{ o.status }}</span>
+                </td>
+                <td class="time">{{ o.time }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+  
+      <!-- Delivery Map -->
+      <div class="panel panel--map">
+        <div class="panel-header"><h3>Active Deliveries</h3></div>
+        <div id="deliveryMap" class="map" role="img" aria-label="Delivery map"></div>
+        <!-- TODO: Real-time delivery tracking via WebSocket -->
+      </div>
+  
+      <!-- Notifications -->
+      <div class="panel panel--notifications">
+        <div class="panel-header"><h3>Notifications</h3></div>
+        <ul class="notif-list">
+          <li class="notif-item">
+            <i class="bi bi-bell-fill" aria-hidden="true"></i>
+            <div>
+              <div class="notif-title">New Order</div>
+              <small class="muted">Mary Johnson placed a prescription • 2m ago</small>
+            </div>
+          </li>
+          <li class="notif-item">
+            <i class="bi bi-check2-circle" aria-hidden="true"></i>
+            <div>
+              <div class="notif-title">Order Delivered</div>
+              <small class="muted">Driver A delivered to John Smith • 18m ago</small>
+            </div>
+          </li>
+          <li class="notif-item">
+            <i class="bi bi-truck" aria-hidden="true"></i>
+            <div>
+              <div class="notif-title">Delivery Assigned</div>
+              <small class="muted">Order #o-104 assigned to Driver C • 35m ago</small>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>

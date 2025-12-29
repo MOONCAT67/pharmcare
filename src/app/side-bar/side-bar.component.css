@@ -1,0 +1,221 @@
+/* Premium Pharmacy Dashboard Sidebar
+   Theme: Light green (#4CAF50) + white
+   Notes:
+   - Fixed left sidebar, full height under header
+   - 240px width, hover/active animations, pill items
+   - Rounded edges and subtle shadows
+*/
+
+/* Design tokens */
+:host {
+    --brand: #4caf50;
+    --brand-600: #43a047;
+    --brand-700: #388e3c;
+    --brand-100: #eaf8ee;
+    --brand-050: #f4fbf6;
+    --text-900: #1f2937;
+    --text-700: #374151;
+    --text-500: #6b7280;
+    --white: #ffffff;
+    --radius-lg: 16px;
+    --radius-md: 12px;
+    --radius-sm: 10px;
+    --shadow-soft: 0 10px 30px rgba(76, 175, 80, 0.12), 0 2px 10px rgba(0, 0, 0, 0.04);
+    --shadow-hover: 0 12px 34px rgba(76, 175, 80, 0.18), 0 3px 12px rgba(0, 0, 0, 0.06);
+    --header-h: 64px; /* adjust if your header height differs */
+  }
+  
+  /* Sidebar wrapper */
+  .app-sidebar {
+    position: sticky;
+    top: var(--header-h);
+    height: calc(100vh - var(--header-h));
+    width: 240px;
+    min-width: 240px;
+    display: flex;
+    flex-direction: column;
+    padding: 16px 14px;
+    border-radius: var(--radius-lg);
+    /* Soft gradient with subtle glossy overlay */
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.8), rgba(255,255,255,0.9)),
+      linear-gradient(135deg, var(--brand-050) 0%, var(--brand-100) 100%);
+    box-shadow: var(--shadow-soft);
+    border: 1px solid rgba(67, 160, 71, 0.12);
+    overflow: hidden;
+  }
+  
+  /* Brand header */
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 10px;
+    margin: 4px 4px 12px;
+    border-radius: var(--radius-md);
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: saturate(1.1) blur(2px);
+    border: 1px solid rgba(67, 160, 71, 0.1);
+  }
+  
+  .brand-icon {
+    font-size: 1.4rem;
+    color: var(--brand-600);
+  }
+  
+  .brand-name {
+    font-weight: 700;
+    letter-spacing: 0.2px;
+    color: var(--text-900);
+  }
+  
+  /* Navigation list */
+  .nav-links {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 6px 4px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(67, 160, 71, 0.35) transparent;
+  }
+  
+  .nav-links::-webkit-scrollbar {
+    width: 8px;
+  }
+  .nav-links::-webkit-scrollbar-thumb {
+    background: rgba(67, 160, 71, 0.35);
+    border-radius: 6px;
+  }
+  
+  /* Pill-style items */
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: var(--radius-md);
+    color: var(--text-700);
+    text-decoration: none;
+    background: linear-gradient(180deg, rgba(255,255,255,0.65), rgba(255,255,255,0.55));
+    border: 1px solid rgba(67, 160, 71, 0.12);
+    transition:
+      background 220ms ease,
+      color 220ms ease,
+      transform 180ms ease,
+      box-shadow 220ms ease,
+      border-color 220ms ease;
+    position: relative;
+  }
+  
+  .nav-item i {
+    font-size: 1.25rem;
+    width: 22px;
+    text-align: center;
+    color: var(--brand-600);
+  }
+  
+  .nav-item span {
+    font-weight: 600;
+    letter-spacing: 0.2px;
+  }
+  
+  /* Hover effect - subtle lift and glow */
+  .nav-item:hover {
+    transform: translateX(2px);
+    background: linear-gradient(180deg, rgba(255,255,255,0.85), rgba(255,255,255,0.7));
+    border-color: rgba(67, 160, 71, 0.22);
+    box-shadow: 0 6px 16px rgba(76, 175, 80, 0.10);
+  }
+  
+  /* Active route - clear highlight */
+  .nav-item.active,
+  .nav-item.router-link-active,
+  .nav-item:where(.active) {
+    color: var(--text-900);
+    background: linear-gradient(180deg, rgba(76, 175, 80, 0.14), rgba(76, 175, 80, 0.10));
+    border-color: rgba(67, 160, 71, 0.35);
+    box-shadow: 0 10px 24px rgba(76, 175, 80, 0.18), inset 0 0 0 1px rgba(255,255,255,0.35);
+  }
+  
+  .nav-item.active i {
+    color: var(--brand-700);
+  }
+  
+  /* Section separator */
+  .separator {
+    height: 1px;
+    margin: 12px 6px;
+    background: linear-gradient(
+      90deg,
+      rgba(67, 160, 71, 0) 0%,
+      rgba(67, 160, 71, 0.35) 22%,
+      rgba(67, 160, 71, 0.35) 78%,
+      rgba(67, 160, 71, 0) 100%
+    );
+  }
+  
+  /* Footer control (collapse-ready) */
+  .sidebar-footer {
+    margin-top: auto;
+    padding: 8px 6px 2px;
+  }
+  
+  .collapse-btn {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: var(--radius-md);
+    background: linear-gradient(180deg, rgba(255,255,255,0.65), rgba(255,255,255,0.55));
+    border: 1px solid rgba(67, 160, 71, 0.12);
+    color: var(--text-700);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: background 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
+  }
+  
+  .collapse-btn:hover {
+    background: linear-gradient(180deg, rgba(255,255,255,0.85), rgba(255,255,255,0.75));
+    border-color: rgba(67, 160, 71, 0.22);
+    box-shadow: 0 6px 16px rgba(76, 175, 80, 0.10);
+  }
+  
+  /* Rounded outer edges hint (if the parent layout has white background, this gives a premium card feel) */
+  .app-sidebar::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: var(--radius-lg);
+    pointer-events: none;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.6);
+  }
+  
+  /* Responsive: compact rail on small screens */
+  @media (max-width: 992px) {
+    .app-sidebar {
+      width: 72px;
+      min-width: 72px;
+      padding: 14px 10px;
+    }
+  
+    .brand-name,
+    .nav-item span,
+    .collapse-btn span {
+      display: none;
+    }
+  
+    .brand {
+      justify-content: center;
+    }
+  
+    .nav-item {
+      justify-content: center;
+      padding: 10px 8px;
+    }
+  
+    .nav-item i {
+      font-size: 1.3rem;
+      margin: 0;
+    }
+  }

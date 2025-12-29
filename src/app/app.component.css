@@ -1,0 +1,35 @@
+/* ROOT */
+.app-layout {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* HEADER */
+app-header {
+  height: 64px;        /* 🔴 MUST MATCH REAL HEADER HEIGHT */
+  flex-shrink: 0;
+}
+
+/* MAIN AREA */
+.main-layout {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+/* SIDEBAR */
+app-side-bar {
+  width: 240px;
+  flex-shrink: 0;
+  height: 100%;
+}
+
+/* PAGE CONTENT (THIS FIXES EVERYTHING) */
+.page-container {
+  flex: 1;
+  height: 100%;
+  overflow-y: auto;   /* ✅ SCROLL HERE */
+  background: #f6faf7;
+}

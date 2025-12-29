@@ -1,0 +1,106 @@
+<header class="app-header bg-white shadow-sm sticky-top">
+    <nav class="header-inner h-100 d-flex align-items-center justify-content-between gap-2 gap-md-3 px-3 px-md-4">
+      <!-- LEFT: Logo + Name -->
+      <a class="brand d-flex align-items-center text-decoration-none" routerLink="/" aria-label="Go to dashboard home">
+        <i class="bi bi-capsule me-2 brand__icon" aria-hidden="true"></i>
+        <span class="fw-semibold brand__name">PharmaCare</span>
+      </a>
+  
+      <!-- CENTER: Global Search -->
+      <form class="flex-grow-1 d-none d-md-flex align-items-center" role="search" aria-label="Global search">
+        <div class="search position-relative mx-auto">
+          <i class="bi bi-search search__icon" aria-hidden="true"></i>
+          <input
+            type="search"
+            class="form-control form-control-sm rounded-pill ps-5 py-2 search__input"
+            placeholder="Search orders, clients, medicines..."
+            aria-label="Search orders, clients, and medicines"
+          />
+        </div>
+      </form>
+  
+      <!-- RIGHT: Notifications + User -->
+      <div class="d-flex align-items-center gap-2 gap-md-3">
+        <!-- Notifications -->
+        <div class="dropdown">
+          <button
+            class="btn btn-icon btn-light position-relative"
+            type="button"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+            aria-label="Open notifications"
+          >
+            <i class="bi bi-bell fs-5" aria-hidden="true"></i>
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill notif-badge" aria-label="3 unread notifications">
+              3
+              <span class="visually-hidden">unread notifications</span>
+            </span>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end p-0 notif-dropdown">
+            <li class="px-3 py-2 border-bottom small text-secondary">Notifications</li>
+            <li>
+              <button class="dropdown-item d-flex align-items-start gap-2 py-2">
+                <i class="bi bi-cart-check text-success mt-1" aria-hidden="true"></i>
+                <div class="text-start">
+                  <div class="fw-semibold">New order received</div>
+                  <small class="text-secondary">Just now</small>
+                </div>
+              </button>
+            </li>
+            <li>
+              <button class="dropdown-item d-flex align-items-start gap-2 py-2">
+                <i class="bi bi-truck text-success mt-1" aria-hidden="true"></i>
+                <div class="text-start">
+                  <div class="fw-semibold">Delivery completed</div>
+                  <small class="text-secondary">10 min ago</small>
+                </div>
+              </button>
+            </li>
+            <li>
+              <button class="dropdown-item text-center py-2">
+                View all
+              </button>
+            </li>
+          </ul>
+        </div>
+  
+        <!-- User Profile -->
+        <div class="dropdown">
+          <button
+            class="btn d-flex align-items-center btn-user"
+            type="button"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+            aria-label="Open user menu"
+          >
+            <span class="avatar me-2">
+              <img src="https://scontent.ftun15-1.fna.fbcdn.net/v/t39.30808-1/594872501_122099032647151313_3443950145887887260_n.jpg?stp=c0.74.747.747a_dst-jpg_s160x160_tt6&_nc_cat=109&ccb=1-7&_nc_sid=e99d92&_nc_ohc=k6nYyAEfHxIQ7kNvwF_yoU7&_nc_oc=Adlb2DVWnn8H1YQPOIOULbNwjmG3C-HdXL3HlsLrYIfi7NLBMFpNUS52WSGE7xIggys&_nc_zt=24&_nc_ht=scontent.ftun15-1.fna&_nc_gid=lAIFwmsv_6TA7tQ08Zzncg&oh=00_Aflqnwq4BPPzN7hnviWJh0DiQqcALSVyxoQKG9Oo07V5sw&oe=695589A0" alt="User avatar" class="avatar__img" />
+            </span>
+            <span class="d-none d-sm-flex flex-column align-items-start lh-1">
+              <span class="fw-semibold user__name">Dr. Jane Doe</span>
+              <small class="text-secondary user__role">Pharmacist</small>
+            </span>
+            <i class="bi bi-chevron-down ms-2 text-secondary d-none d-sm-inline" aria-hidden="true"></i>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end shadow-sm user-dropdown">
+            <li>
+              <a class="dropdown-item d-flex align-items-center gap-2" href="#" aria-label="Go to profile">
+                <i class="bi bi-person-circle" aria-hidden="true"></i> Profile
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item d-flex align-items-center gap-2" href="#" aria-label="Open settings">
+                <i class="bi bi-gear" aria-hidden="true"></i> Settings
+              </a>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <a class="dropdown-item d-flex align-items-center gap-2 text-danger" href="#" aria-label="Logout">
+                <i class="bi bi-box-arrow-right" aria-hidden="true"></i> Logout
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+  </header>

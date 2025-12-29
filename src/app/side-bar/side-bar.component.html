@@ -1,0 +1,56 @@
+<aside class="app-sidebar" role="navigation" aria-label="Primary sidebar">
+  <div class="brand">
+    <i class="bi bi-hospital brand-icon" aria-hidden="true"></i>
+    <span class="brand-name">PharmaOne</span>
+  </div>
+
+  <nav class="nav-links">
+    <a class="nav-item" routerLink="" [routerLinkActiveOptions]="{ exact: true }" routerLinkActive="active" aria-current="page">
+      <i class="bi bi-speedometer2" aria-hidden="true"></i>
+      <span>Dashboard</span>
+    </a>
+
+    <a class="nav-item" routerLink="/orders" routerLinkActive="active">
+      <i class="bi bi-clipboard-check" aria-hidden="true"></i>
+      <span>Orders</span>
+    </a>
+
+    <a class="nav-item" routerLink="/deliveries" routerLinkActive="active">
+      <i class="bi bi-truck" aria-hidden="true"></i>
+      <span>Deliveries</span>
+    </a>
+
+    <a class="nav-item" routerLink="/sales" routerLinkActive="active">
+      <i class="bi bi-cash-coin" aria-hidden="true"></i>
+      <span>Sales</span>
+    </a>
+
+    <a class="nav-item" routerLink="/stock" routerLinkActive="active">
+      <i class="bi bi-box-seam" aria-hidden="true"></i>
+      <span>Stock</span>
+    </a>
+
+    <a class="nav-item" routerLink="/employees" routerLinkActive="active">
+      <i class="bi bi-people" aria-hidden="true"></i>
+      <span>Employees</span>
+    </a>
+
+    <a class="nav-item" routerLink="/reports" routerLinkActive="active">
+      <i class="bi bi-bar-chart" aria-hidden="true"></i>
+      <span>Reports</span>
+    </a>
+
+    <div class="separator" aria-hidden="true"></div>
+
+    <a class="nav-item" routerLink="/settings" routerLinkActive="active">
+      <i class="bi bi-gear" aria-hidden="true"></i>
+      <span>Settings</span>
+    </a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <button type="button" class="collapse-btn" aria-label="Collapse sidebar">
+      <i class="bi bi-chevron-double-left" aria-hidden="true"></i>
+    </button>
+  </div>
+</aside>
