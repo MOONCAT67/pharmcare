@@ -19,7 +19,19 @@ export interface Medicine {
   id: string;
   name: string;
   imageUrl?: string;
-  available: boolean;
+  // Stock and per-medicine recipe fields
+  existsInStock: boolean;
+  dosage: string;            // e.g. 500mg
+  intakeTimes: {             // timing checkboxes
+    morning: boolean;
+    noon: boolean;
+    night: boolean;
+    beforeMeals: boolean;
+  };
+  frequency: string;         // e.g. 2x/day
+  duration: string;          // e.g. 7 days
+  warnings?: string;         // interactions, age limits, etc.
+  recipeValidated: boolean;  // has pharmacist validated this medicine recipe?
 }
 
 export interface RecipeData {
@@ -40,14 +52,9 @@ export interface Order {
   items: string[];
   prescriptionImageUrl?: string;
   assignedDriverId?: string;
-  // Medical instructions / recipe metadata
-  recipe?: string;
-  recipeCreatedAt?: string;
-  recipeAuthor?: string;
   // Workstation fields
   medicines: Medicine[];
   prescriptionText?: string;
-  recipeData?: RecipeData;
   pickupCode?: string;
   forwardedTo?: string;
 }
@@ -82,13 +89,10 @@ export class OrdersComponent implements OnInit, AfterViewInit {
   // Selection state
   selectedOrder: Order | null = null;
   selectedDriverId: string | null = null;
-  recipeDraft: string = '';
   // Workstation UI state
   activeTab: 'text' | 'image' = 'text';
   imgZoom = 1;
   medSearch = '';
-  editingRecipe = false;
-  recipeForm: RecipeData = { dosage: '', timing: '', duration: '', warnings: '' };
   pickupInput: string = '';
 
   // Leaflet map
@@ -126,59 +130,58 @@ export class OrdersComponent implements OnInit, AfterViewInit {
       { id: 'c5', name: 'Laura White', age: 73, phone: '+216 98 999 000', address: 'Carthage, Tunis', lat: 36.856, lng: 10.328 },
     ];
 
-    const meds = (names: Array<{ id: string; name: string; available: boolean; img?: string }>): Medicine[] =>
-      names.map(n => ({ id: n.id, name: n.name, available: n.available, imageUrl: n.img }));
+    const med = (id: string, name: string, exists: boolean, img?: string, init?: Partial<Medicine>): Medicine => ({
+      id,
+      name,
+      imageUrl: img,
+      existsInStock: exists,
+      dosage: '',
+      intakeTimes: { morning: false, noon: false, night: false, beforeMeals: false },
+      frequency: '',
+      duration: '',
+      warnings: '',
+      recipeValidated: false,
+      ...(init || {})
+    });
 
     this.orders = [
       {
-        id: 'O-2001', client: clients[0], type: 'Prescription', status: 'New', time: '09:12', items: ['Amoxicillin 500mg', 'Vitamin D3'],
-        prescriptionText: 'Rx: Amoxicillin 500mg, 3 times daily after meals for 7 days. Vitamin D3 daily after lunch.',
+        id: 'O-3001', client: clients[0], type: 'Prescription', status: 'New', time: '09:12', items: ['Amoxicillin 500mg', 'Vitamin D3'],
+        prescriptionText: 'Rx: Amoxicillin 500mg 3x/day after meals for 7 days. Vit D3 daily.',
         prescriptionImageUrl: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?q=80&w=800&auto=format&fit=crop',
-        medicines: meds([
-          { id: 'm1', name: 'Amoxicillin 500mg', available: true, img: 'https://images.unsplash.com/photo-1584362917165-526a968579e8?q=80&w=400&auto=format&fit=crop' },
-          { id: 'm2', name: 'Vitamin D3 1000IU', available: true, img: 'https://images.unsplash.com/photo-1544989164-31dc3c645987?q=80&w=400&auto=format&fit=crop' }
-        ])
+        medicines: [
+          med('m1', 'Amoxicillin 500mg', true, 'https://images.unsplash.com/photo-1584362917165-526a968579e8?q=80&w=400&auto=format&fit=crop',
+            { dosage: '500mg', frequency: '3x/day', duration: '7 days', intakeTimes: { morning: true, noon: true, night: true, beforeMeals: false }, recipeValidated: true }),
+          med('m2', 'Vitamin D3 1000IU', true, 'https://images.unsplash.com/photo-1544989164-31dc3c645987?q=80&w=400&auto=format&fit=crop')
+        ]
       },
       {
-        id: 'O-2002', client: clients[1], type: 'List', status: 'Prepared', time: '09:40', items: ['Paracetamol 1g', 'Cough Syrup'],
-        prescriptionText: 'Paracetamol 1g if fever. Cough syrup night only.',
-        medicines: meds([
-          { id: 'm3', name: 'Paracetamol 1g', available: true },
-          { id: 'm4', name: 'Cough Syrup 200ml', available: true }
-        ]),
-        recipeData: { dosage: '1g', timing: 'after meals', duration: '3 days', warnings: 'Do not exceed 3g/day', author: 'Pharmacist Admin', createdAt: new Date().toISOString() }
-      },
-      {
-        id: 'O-2003', client: clients[2], type: 'Prescription', status: 'Waiting for Delivery', time: '10:05', items: ['Ibuprofen 400mg'],
+        id: 'O-3002', client: clients[1], type: 'Prescription', status: 'New', time: '10:05', items: ['Ibuprofen 400mg'],
         prescriptionImageUrl: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?q=80&w=800&auto=format&fit=crop',
-        medicines: meds([
-          { id: 'm5', name: 'Ibuprofen 400mg', available: true }
-        ]),
-        recipeData: { dosage: '400mg', timing: 'after meals', duration: '5 days', warnings: 'Avoid if gastric issues', author: 'Pharmacist Admin', createdAt: new Date().toISOString() }
+        medicines: [
+          med('m3', 'Ibuprofen 400mg', true, undefined, { dosage: '400mg', frequency: '2x/day', duration: '5 days', intakeTimes: { morning: true, noon: false, night: true, beforeMeals: false }, warnings: 'Avoid if gastric issues', recipeValidated: true })
+        ]
       },
       {
-        id: 'O-2004', client: clients[3], type: 'List', status: 'Assigned', time: '10:22', items: ['Face Mask x50', 'Hand Sanitizer 500ml'],
-        medicines: meds([
-          { id: 'm6', name: 'Face Mask x50', available: true },
-          { id: 'm7', name: 'Hand Sanitizer 500ml', available: true }
-        ]),
-        recipeData: { dosage: '-', timing: '-', duration: '-', warnings: 'Use as directed', author: 'Pharmacist Admin', createdAt: new Date().toISOString() },
-        assignedDriverId: 'd3',
-        pickupCode: '824193'
+        id: 'O-3003', client: clients[2], type: 'Prescription', status: 'Waiting for Delivery', time: '10:22', items: ['Paracetamol 1g', 'Cough Syrup'],
+        medicines: [
+          med('m4', 'Paracetamol 1g', true, undefined, { dosage: '1g', frequency: '3x/day', duration: '3 days', intakeTimes: { morning: true, noon: true, night: true, beforeMeals: false }, recipeValidated: true }),
+          med('m5', 'Cough Syrup 200ml', true, undefined, { dosage: '10ml', frequency: '1x/night', duration: '5 days', intakeTimes: { morning: false, noon: false, night: true, beforeMeals: false }, recipeValidated: true })
+        ]
       },
       {
-        id: 'O-2005', client: clients[4], type: 'Prescription', status: 'Delivered', time: '11:01', items: ['Vitamin C 1000mg'],
-        medicines: meds([
-          { id: 'm8', name: 'Vitamin C 1000mg', available: true }
-        ]),
-        prescriptionText: 'Vitamin C 1000mg daily with breakfast.',
-        recipeData: { dosage: '1000mg', timing: 'morning', duration: '14 days', warnings: 'Monitor blood pressure', author: 'Pharm. A. Idriss', createdAt: new Date().toISOString() }
+        id: 'O-3004', client: clients[3], type: 'Prescription', status: 'Assigned', time: '11:01', items: ['Vitamin C 1000mg'],
+        medicines: [
+          med('m6', 'Vitamin C 1000mg', true, undefined, { dosage: '1000mg', frequency: '1x/day', duration: '14 days', intakeTimes: { morning: true, noon: false, night: false, beforeMeals: false }, recipeValidated: true })
+        ],
+        pickupCode: '824193',
+        assignedDriverId: 'd3'
       },
       {
-        id: 'O-2006', client: clients[2], type: 'Prescription', status: 'Declined', time: '11:20', items: ['Azithromycin 500mg'],
-        medicines: meds([
-          { id: 'm9', name: 'Azithromycin 500mg', available: false }
-        ]),
+        id: 'O-3005', client: clients[2], type: 'Prescription', status: 'Declined', time: '11:20', items: ['Azithromycin 500mg'],
+        medicines: [
+          med('m7', 'Azithromycin 500mg', false)
+        ],
         forwardedTo: 'Pharmacy Downtown'
       }
     ];
@@ -207,18 +210,10 @@ export class OrdersComponent implements OnInit, AfterViewInit {
   selectOrder(o: Order): void {
     this.selectedOrder = o;
     this.selectedDriverId = o.assignedDriverId ?? null;
-    this.recipeDraft = o.recipe ?? '';
     // Initialize workstation state
     this.activeTab = o.prescriptionText ? 'text' : (o.prescriptionImageUrl ? 'image' : 'text');
     this.imgZoom = 1;
     this.medSearch = '';
-    this.editingRecipe = false;
-    this.recipeForm = {
-      dosage: o.recipeData?.dosage || '',
-      timing: o.recipeData?.timing || '',
-      duration: o.recipeData?.duration || '',
-      warnings: o.recipeData?.warnings || ''
-    };
     this.pickupInput = '';
     this.renderMap();
   }
@@ -232,7 +227,8 @@ export class OrdersComponent implements OnInit, AfterViewInit {
 
   moveToWaitingForDelivery(): void {
     if (!this.selectedOrder) return;
-    if (this.selectedOrder.status !== 'Prepared') return;
+    // Guard: only move when all medicines exist and validated
+    if (!this.isOrderFullyValidated(this.selectedOrder)) return;
     this.selectedOrder.status = 'Waiting for Delivery';
   }
 
@@ -280,18 +276,6 @@ export class OrdersComponent implements OnInit, AfterViewInit {
     this.renderMap();
   }
 
-  saveRecipe(): void {
-    if (!this.selectedOrder) return;
-    // Read-only once assigned/on the way/delivered
-    if (this.selectedOrder.status === 'Assigned' || this.selectedOrder.status === 'On The Way' || this.selectedOrder.status === 'Delivered') return;
-    const text = (this.recipeDraft || '').trim();
-    if (!text) return;
-    // TODO: Replace with OrdersService.saveRecipe(orderId, recipeText)
-    this.selectedOrder.recipe = text;
-    this.selectedOrder.recipeAuthor = 'Pharmacist Admin';
-    this.selectedOrder.recipeCreatedAt = new Date().toISOString();
-  }
-
   // Workstation helpers and actions
   statusClass(s: OrderStatus): string {
     switch (s) {
@@ -317,38 +301,98 @@ export class OrdersComponent implements OnInit, AfterViewInit {
     return !q ? meds : meds.filter(m => m.name.toLowerCase().includes(q));
   }
 
-  hasMissingMedicines(o: Order): boolean { return (o.medicines || []).some(m => !m.available); }
+  // Medicine-centric helpers
+  hasMissingMedicines(o: Order): boolean { return (o.medicines || []).some(m => !m.existsInStock); }
 
-  enterRecipeMode(): void { this.editingRecipe = true; }
-  saveRecipeForm(): void {
+  anyUnavailable(o: Order): boolean { return this.hasMissingMedicines(o); }
+
+  anyIncomplete(o: Order): boolean {
+    const meds = o.medicines || [];
+    return meds.some(m => m.existsInStock && !m.recipeValidated);
+  }
+
+  isMedicineComplete(m: Medicine): boolean {
+    const hasTiming = m.intakeTimes.morning || m.intakeTimes.noon || m.intakeTimes.night || m.intakeTimes.beforeMeals;
+    return !!(m.existsInStock && m.dosage && m.frequency && m.duration && hasTiming);
+  }
+
+  canValidateMedicine(m: Medicine): boolean { return this.isMedicineComplete(m); }
+
+  validateMedicine(m: Medicine): void {
+    if (!this.isMedicineComplete(m)) return;
+    m.recipeValidated = true;
+  }
+
+  onAvailabilityChange(order: Order, m: Medicine, exists: boolean): void {
+    m.existsInStock = !!exists;
+    if (!exists) {
+      order.status = 'Declined';
+      order.forwardedTo = order.forwardedTo || 'Nearest partner pharmacy';
+    }
+  }
+
+  isOrderFullyValidated(o: Order): boolean {
+    const meds = o.medicines || [];
+    return meds.length > 0 && meds.every(m => m.existsInStock && m.recipeValidated && this.isMedicineComplete(m));
+  }
+
+  validatedCount(o: Order): number {
+    const meds = o.medicines || [];
+    return meds.filter(m => m.existsInStock && m.recipeValidated).length;
+  }
+
+  printCombinedRecipe(): void {
     if (!this.selectedOrder) return;
-    const data: RecipeData = {
-      dosage: (this.recipeForm.dosage || '').trim(),
-      timing: (this.recipeForm.timing || '').trim(),
-      duration: (this.recipeForm.duration || '').trim(),
-      warnings: (this.recipeForm.warnings || '').trim(),
-      author: 'Pharmacist Admin',
-      createdAt: new Date().toISOString(),
-    };
-    // TODO: OrdersService.saveRecipe(orderId, recipeText)
-    this.selectedOrder.recipeData = data;
-    this.editingRecipe = false;
-  }
-
-  sendRecipe(): void {
-    if (!this.selectedOrder?.recipeData) return;
-    // TODO: integrate with messaging API
-    console.info('Recipe sent to', this.selectedOrder.client.phone, this.selectedOrder.recipeData);
-  }
-
-  printRecipe(): void {
-    // TODO: better printable template
     if (!isPlatformBrowser(this.platformId)) return;
-    window.print();
+    const o = this.selectedOrder;
+    const blocks = (o.medicines || []).filter(m => m.existsInStock).map(m => `
+      <section class="med-block">
+        <h3>${m.name}</h3>
+        <div><strong>Dosage:</strong> ${m.dosage}</div>
+        <div><strong>Frequency:</strong> ${m.frequency}</div>
+        <div><strong>Duration:</strong> ${m.duration}</div>
+        ${m.warnings ? `<div><strong>Warnings:</strong> ${m.warnings}</div>` : ''}
+        <div><strong>Intake:</strong>
+          ${(m.intakeTimes.morning ? 'Morning · ' : '')}
+          ${(m.intakeTimes.noon ? 'Noon · ' : '')}
+          ${(m.intakeTimes.night ? 'Night · ' : '')}
+          ${(m.intakeTimes.beforeMeals ? 'Before meals' : '')}
+        </div>
+      </section>
+    `).join('<hr />');
+    const html = `<!doctype html><html><head><meta charset="utf-8"/>
+      <title>Prescription</title>
+      <style>
+        body{font-family:Arial,Helvetica,sans-serif;padding:24px;color:#111}
+        h2{margin:0 0 6px}
+        .muted{color:#555}
+        .med-block{margin:16px 0}
+        hr{border:none;border-top:1px dashed #999;margin:16px 0}
+      </style>
+    </head><body>
+      <header>
+        <h2>Medical Prescription</h2>
+        <div class="muted">${new Date().toLocaleString()}</div>
+      </header>
+      <section>
+        <h3>Client</h3>
+        <div><strong>Name:</strong> ${o.client.name}</div>
+        <div><strong>Phone:</strong> ${o.client.phone}</div>
+        <div><strong>Address:</strong> ${o.client.address}</div>
+      </section>
+      <hr/>
+      ${blocks}
+      <script>setTimeout(()=>{window.print();window.close();},200);</script>
+    </body></html>`;
+    const w = window.open('', '_blank');
+    if (w) { w.document.write(html); w.document.close(); }
   }
 
-  declineOrder(): void { if (this.selectedOrder) this.selectedOrder.status = 'Declined'; }
-  forwardOrder(): void { if (this.selectedOrder) { this.selectedOrder.forwardedTo = 'Nearest partner pharmacy'; this.selectedOrder.status = 'Declined'; } }
+  sendCombinedRecipe(): void {
+    if (!this.selectedOrder) return;
+    // TODO: integrate with messaging API
+    console.info('Send combined recipe to', this.selectedOrder.client.phone, this.selectedOrder.medicines);
+  }
 
   verifyPickupCode(): void {
     if (!this.selectedOrder || this.selectedOrder.status !== 'Assigned') return;

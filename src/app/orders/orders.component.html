@@ -67,19 +67,57 @@
               <div class="med-name">{{ m.name }}</div>
             </div>
             <div class="med-right">
-              <span class="status-badge" [ngClass]="m.available ? 'badge--available' : 'badge--missing'">{{ m.available ? 'Available' : 'Missing' }}</span>
+              <span class="status-badge" [ngClass]="!m.existsInStock ? 'badge--missing' : (m.recipeValidated ? 'badge--available' : 'badge--missing')">
+                {{ !m.existsInStock ? 'Missing' : (m.recipeValidated ? 'Validated' : 'Incomplete') }}
+              </span>
             </div>
           </div>
         </div>
-        <!-- Sticky Decision Bar -->
+
+        <!-- Per-medicine editor -->
+        <div class="meds-list">
+          <div class="med-row" *ngFor="let m of visibleMedicines">
+            <div class="med-left">
+              <div class="med-name">{{ m.name }}</div>
+            </div>
+            <div class="med-right">
+              <label style="margin-right:6px"><input type="radio" name="exist-{{m.id}}" [checked]="m.existsInStock" (change)="onAvailabilityChange(sel, m, true)" /> Exists</label>
+              <label><input type="radio" name="exist-{{m.id}}" [checked]="!m.existsInStock" (change)="onAvailabilityChange(sel, m, false)" /> Does not exist</label>
+            </div>
+            <div class="med-editor" style="grid-column: 1 / -1; margin-top:8px" [class.disabled]="!m.existsInStock">
+              <div class="form-grid">
+                <label>Dosage<input type="text" [(ngModel)]="m.dosage" [disabled]="!m.existsInStock || m.recipeValidated" /></label>
+                <label>Frequency<input type="text" [(ngModel)]="m.frequency" placeholder="e.g. 2x/day" [disabled]="!m.existsInStock || m.recipeValidated" /></label>
+                <label>Duration<input type="text" [(ngModel)]="m.duration" placeholder="e.g. 7 days" [disabled]="!m.existsInStock || m.recipeValidated" /></label>
+                <div>
+                  <div class="label">Intake timing</div>
+                  <label><input type="checkbox" [(ngModel)]="m.intakeTimes.morning" [disabled]="!m.existsInStock || m.recipeValidated" /> Morning</label>
+                  <label><input type="checkbox" [(ngModel)]="m.intakeTimes.noon" [disabled]="!m.existsInStock || m.recipeValidated" /> Noon</label>
+                  <label><input type="checkbox" [(ngModel)]="m.intakeTimes.night" [disabled]="!m.existsInStock || m.recipeValidated" /> Night</label>
+                  <label><input type="checkbox" [(ngModel)]="m.intakeTimes.beforeMeals" [disabled]="!m.existsInStock || m.recipeValidated" /> Before meals</label>
+                </div>
+                <label>Warnings<textarea rows="2" [(ngModel)]="m.warnings" [disabled]="!m.existsInStock || m.recipeValidated"></textarea></label>
+              </div>
+              <div class="stack">
+                <button class="btn btn--primary" type="button" (click)="validateMedicine(m)" [disabled]="!canValidateMedicine(m) || !m.existsInStock || m.recipeValidated">Validate</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sticky Decision Bar: progress + gated actions -->
         <div class="decision-bar">
-          <ng-container *ngIf="hasMissingMedicines(sel); else canPrepare">
-            <button type="button" class="btn btn--primary" (click)="declineOrder()">Decline order</button>
-            <button type="button" class="btn" (click)="forwardOrder()">Forward to another pharmacy</button>
-          </ng-container>
-          <ng-template #canPrepare>
-            <button type="button" class="btn btn--primary" (click)="enterRecipeMode()">Prepare recipe</button>
-          </ng-template>
+          <div class="muted" style="margin-right:auto">
+            <ng-container *ngIf="sel.status !== 'Declined'; else declinedMsg">
+              Completed {{ validatedCount(sel) }} / {{ sel.medicines.length }}
+            </ng-container>
+            <ng-template #declinedMsg>
+              Order declined • Forwarded to: {{ sel.forwardedTo || 'Another pharmacy' }}
+            </ng-template>
+          </div>
+          <button type="button" class="btn" (click)="sendCombinedRecipe()" [disabled]="!isOrderFullyValidated(sel)">Send to client</button>
+          <button type="button" class="btn" (click)="printCombinedRecipe()" [disabled]="!isOrderFullyValidated(sel)">Print</button>
+          <button type="button" class="btn btn--primary" (click)="markWaitingForDelivery()" [disabled]="!isOrderFullyValidated(sel)">Move to Waiting for Delivery</button>
         </div>
       </section>
     </main>
@@ -89,28 +127,20 @@
       <div class="actions-panel">
         <ng-container [ngSwitch]="sel.status">
           <div *ngSwitchCase="'New'">
-            <ng-container *ngIf="editingRecipe; else recipeHint">
-              <h3>Recipe Editor</h3>
-              <div class="form-grid">
-                <label>Dosage<input type="text" [(ngModel)]="recipeForm.dosage" /></label>
-                <label>Timing<input type="text" [(ngModel)]="recipeForm.timing" placeholder="morning / night / before meals" /></label>
-                <label>Duration<input type="text" [(ngModel)]="recipeForm.duration" /></label>
-                <label>Warnings<textarea rows="3" [(ngModel)]="recipeForm.warnings"></textarea></label>
-              </div>
-              <div class="stack">
-                <button class="btn btn--primary" type="button" (click)="saveRecipeForm()">Save</button>
-                <button class="btn" type="button" (click)="sendRecipe()" [disabled]="!sel.recipeData">Send to client</button>
-                <button class="btn" type="button" (click)="printRecipe()" [disabled]="!sel.recipeData">Print</button>
-                <button class="btn" type="button" (click)="markWaitingForDelivery()" [disabled]="!sel.recipeData">Move to Waiting for Delivery</button>
-              </div>
-            </ng-container>
-            <ng-template #recipeHint>
-              <p class="muted">Prepare recipe when all medicines are available.</p>
-            </ng-template>
+            <h3>Actions</h3>
+            <p class="muted">Complete each medicine recipe. Actions unlock when all medicines are validated.</p>
+            <div class="stack">
+              <button class="btn" type="button" (click)="sendCombinedRecipe()" [disabled]="!isOrderFullyValidated(sel)">Send to client</button>
+              <button class="btn" type="button" (click)="printCombinedRecipe()" [disabled]="!isOrderFullyValidated(sel)">Print</button>
+              <button class="btn btn--primary" type="button" (click)="markWaitingForDelivery()" [disabled]="!isOrderFullyValidated(sel)">Move to Waiting for Delivery</button>
+            </div>
           </div>
           <div *ngSwitchCase="'Prepared'">
+            <h3>Actions</h3>
             <div class="stack">
-              <button class="btn btn--primary" type="button" (click)="markWaitingForDelivery()">Move to Waiting for Delivery</button>
+              <button class="btn" type="button" (click)="sendCombinedRecipe()" [disabled]="!isOrderFullyValidated(sel)">Send to client</button>
+              <button class="btn" type="button" (click)="printCombinedRecipe()" [disabled]="!isOrderFullyValidated(sel)">Print</button>
+              <button class="btn btn--primary" type="button" (click)="markWaitingForDelivery()" [disabled]="!isOrderFullyValidated(sel)">Move to Waiting for Delivery</button>
             </div>
           </div>
           <div *ngSwitchCase="'Waiting for Delivery'">
@@ -143,7 +173,7 @@
           </div>
           <div *ngSwitchCase="'Delivered'">
             <h3>Delivered</h3>
-            <button class="btn" type="button" (click)="printRecipe()" [disabled]="!sel.recipeData">Print Recipe</button>
+            <button class="btn" type="button" (click)="printCombinedRecipe()">Print Recipe</button>
           </div>
           <div *ngSwitchCase="'Declined'">
             <h3>Order Declined</h3>
@@ -347,18 +377,7 @@
           </ng-container>
         </div>
 
-        <!-- Medical Instructions / Recipe -->
-        <div class="card recipe" [class.is-readonly]="sel.status === 'Assigned' || sel.status === 'On The Way' || sel.status === 'Delivered'">
-          <h4>Medical Instructions / Recipe</h4>
-          <div *ngIf="sel.recipeAuthor && sel.recipeCreatedAt" class="stamp">
-            <small class="muted">Last updated {{ sel.recipeCreatedAt | date:'short' }} by {{ sel.recipeAuthor }}</small>
-          </div>
-          <textarea [(ngModel)]="recipeDraft" [readonly]="sel.status === 'Assigned' || sel.status === 'On The Way' || sel.status === 'Delivered'" placeholder="Dosage, timing (morning/night/before meals), and warnings..."></textarea>
-          <div class="assign-actions" *ngIf="sel.status !== 'Assigned' && sel.status !== 'On The Way' && sel.status !== 'Delivered'">
-            <button type="button" class="btn btn--primary" (click)="saveRecipe()">Save Instructions</button>
-          </div>
-          <!-- TODO: Replace with OrdersService.saveRecipe(orderId, recipeText) -->
-        </div>
+        
 
         <!-- Map -->
         <div class="card card--map" *ngIf="sel.status === 'On The Way' || sel.status === 'Delivered'">
