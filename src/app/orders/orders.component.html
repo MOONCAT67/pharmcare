@@ -1,5 +1,164 @@
-<!-- Orders Management Page -->
+<!-- Orders Workstation (Redesigned) -->
 <section class="orders-page">
+  <!-- New 3-Column Workstation Layout -->
+  <div class="orders-shell">
+    <!-- Left: Orders Queue -->
+    <aside class="col col-queue">
+      <div class="sec-h">
+        <h3>Orders Queue</h3>
+        <small class="muted">{{ orders.length }} total</small>
+      </div>
+      <div class="queue">
+        <button type="button" class="queue-item" *ngFor="let o of orders" (click)="selectOrder(o)" [class.is-active]="o === selectedOrder">
+          <div class="q-top">
+            <span class="q-name">{{ o.client.name }}</span>
+            <span class="q-time mono">{{ o.time }}</span>
+          </div>
+          <div class="q-bottom">
+            <span class="status-badge" [ngClass]="statusClass(o.status)">{{ o.status }}</span>
+          </div>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Center: Workspace -->
+    <main class="col col-workspace" *ngIf="selectedOrder as sel">
+      <!-- Client -->
+      <section class="ws-section client">
+        <div class="sec-h"><h3>Client</h3></div>
+        <div class="client-grid">
+          <div><div class="label">Name</div><div class="value">{{ sel.client.name }}</div></div>
+          <div><div class="label">Age</div><div class="value">{{ sel.client.age }}</div></div>
+          <div><div class="label">Phone</div><div class="value">{{ sel.client.phone }}</div></div>
+          <div class="span2"><div class="label">Address</div><div class="value">{{ sel.client.address }}</div></div>
+        </div>
+      </section>
+
+      <!-- Prescription Viewer -->
+      <section class="ws-section prescription">
+        <div class="sec-h"><h3>Prescription</h3></div>
+        <div class="tabs">
+          <button type="button" class="tab" [class.is-active]="activeTab === 'text'" (click)="setTab('text')" [disabled]="!sel.prescriptionText">Text</button>
+          <button type="button" class="tab" [class.is-active]="activeTab === 'image'" (click)="setTab('image')" [disabled]="!sel.prescriptionImageUrl">Image</button>
+        </div>
+        <div class="tab-panel" *ngIf="activeTab === 'text'">
+          <pre class="rx-text">{{ sel.prescriptionText || 'No text prescription provided.' }}</pre>
+        </div>
+        <div class="tab-panel" *ngIf="activeTab === 'image'">
+          <div class="img-tools">
+            <button type="button" class="btn" (click)="zoomOut()" [disabled]="imgZoom <= 0.6">-</button>
+            <span class="mono">{{ imgZoom | number:'1.0-1' }}x</span>
+            <button type="button" class="btn" (click)="zoomIn()" [disabled]="imgZoom >= 2">+</button>
+          </div>
+          <div class="img-wrap">
+            <img [src]="sel.prescriptionImageUrl" alt="Prescription" [style.transform]="'scale(' + imgZoom + ')'">
+          </div>
+        </div>
+      </section>
+
+      <!-- Medicines Verification -->
+      <section class="ws-section meds">
+        <div class="sec-h"><h3>Medicines</h3></div>
+        <input type="text" [(ngModel)]="medSearch" placeholder="Search medicines" />
+        <div class="meds-list">
+          <div class="med-row" *ngFor="let m of visibleMedicines">
+            <div class="med-left">
+              <img *ngIf="m.imageUrl" [src]="m.imageUrl" [alt]="m.name" class="med-thumb" />
+              <div class="med-name">{{ m.name }}</div>
+            </div>
+            <div class="med-right">
+              <span class="status-badge" [ngClass]="m.available ? 'badge--available' : 'badge--missing'">{{ m.available ? 'Available' : 'Missing' }}</span>
+            </div>
+          </div>
+        </div>
+        <!-- Sticky Decision Bar -->
+        <div class="decision-bar">
+          <ng-container *ngIf="hasMissingMedicines(sel); else canPrepare">
+            <button type="button" class="btn btn--primary" (click)="declineOrder()">Decline order</button>
+            <button type="button" class="btn" (click)="forwardOrder()">Forward to another pharmacy</button>
+          </ng-container>
+          <ng-template #canPrepare>
+            <button type="button" class="btn btn--primary" (click)="enterRecipeMode()">Prepare recipe</button>
+          </ng-template>
+        </div>
+      </section>
+    </main>
+
+    <!-- Right: Action Panel -->
+    <aside class="col col-actions" *ngIf="selectedOrder as sel">
+      <div class="actions-panel">
+        <ng-container [ngSwitch]="sel.status">
+          <div *ngSwitchCase="'New'">
+            <ng-container *ngIf="editingRecipe; else recipeHint">
+              <h3>Recipe Editor</h3>
+              <div class="form-grid">
+                <label>Dosage<input type="text" [(ngModel)]="recipeForm.dosage" /></label>
+                <label>Timing<input type="text" [(ngModel)]="recipeForm.timing" placeholder="morning / night / before meals" /></label>
+                <label>Duration<input type="text" [(ngModel)]="recipeForm.duration" /></label>
+                <label>Warnings<textarea rows="3" [(ngModel)]="recipeForm.warnings"></textarea></label>
+              </div>
+              <div class="stack">
+                <button class="btn btn--primary" type="button" (click)="saveRecipeForm()">Save</button>
+                <button class="btn" type="button" (click)="sendRecipe()" [disabled]="!sel.recipeData">Send to client</button>
+                <button class="btn" type="button" (click)="printRecipe()" [disabled]="!sel.recipeData">Print</button>
+                <button class="btn" type="button" (click)="markWaitingForDelivery()" [disabled]="!sel.recipeData">Move to Waiting for Delivery</button>
+              </div>
+            </ng-container>
+            <ng-template #recipeHint>
+              <p class="muted">Prepare recipe when all medicines are available.</p>
+            </ng-template>
+          </div>
+          <div *ngSwitchCase="'Prepared'">
+            <div class="stack">
+              <button class="btn btn--primary" type="button" (click)="markWaitingForDelivery()">Move to Waiting for Delivery</button>
+            </div>
+          </div>
+          <div *ngSwitchCase="'Waiting for Delivery'">
+            <h3>Driver Claim</h3>
+            <div class="drivers-list">
+              <div class="driver-row" *ngFor="let d of drivers">
+                <div>{{ d.name }} • {{ d.area }}</div>
+                <button class="btn" type="button" [disabled]="!d.available" (click)="claimOrder(sel.id, d.id)">{{ d.available ? 'Claim as ' + d.name : 'Busy' }}</button>
+              </div>
+            </div>
+          </div>
+          <div *ngSwitchCase="'Assigned'">
+            <h3>Pickup Verification</h3>
+            <div class="code-box">
+              <div class="label">Security code</div>
+              <div class="code mono">{{ sel.pickupCode }}</div>
+            </div>
+            <div class="form-grid">
+              <label>Enter code<input type="text" [(ngModel)]="pickupInput" /></label>
+            </div>
+            <div class="stack">
+              <button class="btn btn--primary" type="button" (click)="verifyPickupCode()">Confirm pickup</button>
+            </div>
+          </div>
+          <div *ngSwitchCase="'On The Way'">
+            <h3>Delivery</h3>
+            <div class="stack">
+              <button class="btn btn--primary" type="button" (click)="markDelivered()">Mark Delivered</button>
+            </div>
+          </div>
+          <div *ngSwitchCase="'Delivered'">
+            <h3>Delivered</h3>
+            <button class="btn" type="button" (click)="printRecipe()" [disabled]="!sel.recipeData">Print Recipe</button>
+          </div>
+          <div *ngSwitchCase="'Declined'">
+            <h3>Order Declined</h3>
+            <p class="muted">Forwarded to: {{ sel.forwardedTo || 'Another pharmacy' }}</p>
+          </div>
+          <div *ngSwitchDefault>
+            <p class="muted">Select an order.</p>
+          </div>
+        </ng-container>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Legacy UI disabled to avoid reuse of old layout -->
+  <ng-container *ngIf="false">
   <!-- Filters Top -->
   <div class="filters">
     <div class="field">
@@ -12,6 +171,8 @@
       <select id="status" [(ngModel)]="statusFilter">
         <option value="">All</option>
         <option value="New">New</option>
+        <option value="Prepared">Prepared</option>
+        <option value="Waiting for Delivery">Waiting for Delivery</option>
         <option value="Assigned">Assigned</option>
         <option value="On The Way">On The Way</option>
         <option value="Delivered">Delivered</option>
@@ -64,6 +225,8 @@
                 <span class="badge"
                   [ngClass]="{
                     'badge--new': o.status === 'New',
+                    'badge--prepared': o.status === 'Prepared',
+                    'badge--waiting': o.status === 'Waiting for Delivery',
                     'badge--assigned': o.status === 'Assigned',
                     'badge--ontheway': o.status === 'On The Way',
                     'badge--delivered': o.status === 'Delivered'
@@ -123,35 +286,82 @@
         <div class="card">
           <h4>Timeline</h4>
           <div class="timeline">
-            <div class="step" [class.done]="true">Received</div>
+            <div class="step" [class.done]="true">New</div>
+            <div class="step" [class.done]="sel.status === 'Prepared' || sel.status === 'Waiting for Delivery' || sel.status === 'Assigned' || sel.status === 'On The Way' || sel.status === 'Delivered'">Prepared</div>
+            <div class="step" [class.done]="sel.status === 'Waiting for Delivery' || sel.status === 'Assigned' || sel.status === 'On The Way' || sel.status === 'Delivered'">Waiting for Delivery</div>
             <div class="step" [class.done]="sel.status === 'Assigned' || sel.status === 'On The Way' || sel.status === 'Delivered'">Assigned</div>
             <div class="step" [class.done]="sel.status === 'On The Way' || sel.status === 'Delivered'">On The Way</div>
             <div class="step" [class.done]="sel.status === 'Delivered'">Delivered</div>
           </div>
         </div>
 
-        <!-- Assign Delivery -->
+        <!-- Delivery Workflow -->
         <div class="card">
-          <h4>Assign Delivery</h4>
-          <div class="grid-2">
-            <div>
-              <label for="driver">Driver</label>
-              <select id="driver" [(ngModel)]="selectedDriverId">
-                <option [ngValue]="null">Select driver</option>
-                <option *ngFor="let d of drivers" [ngValue]="d.id">
-                  {{ d.name }} • {{ d.area }} • {{ d.available ? 'Available' : 'Busy' }}
-                </option>
-              </select>
+          <h4>Delivery Workflow</h4>
+          <ng-container [ngSwitch]="sel.status">
+            <div *ngSwitchCase="'New'" class="assign-actions">
+              <button type="button" class="btn btn--primary" (click)="markPrepared()">Mark Prepared</button>
             </div>
-            <div class="assign-actions">
-              <button type="button" class="btn btn--primary" (click)="assignDriver()">Assign</button>
+
+            <div *ngSwitchCase="'Prepared'" class="assign-actions">
+              <button type="button" class="btn btn--primary" (click)="moveToWaitingForDelivery()">Move to Waiting for Delivery</button>
             </div>
+
+            <div *ngSwitchCase="'Waiting for Delivery'">
+              <div class="claim-zone">
+                <div>
+                  <div class="label">Waiting for delivery drivers</div>
+                  <small class="muted">First available driver who claims gets assigned</small>
+                </div>
+                <div class="assign-actions">
+                  <button type="button" class="btn" (click)="simulateRandomClaim()">Simulate Claim</button>
+                </div>
+              </div>
+              <div class="drivers-list">
+                <div class="driver-row" *ngFor="let d of drivers">
+                  <div class="value">{{ d.name }} • {{ d.area }}</div>
+                  <button type="button" class="btn" [disabled]="!d.available" (click)="claimOrder(sel.id, d.id)">{{ d.available ? 'Claim as ' + d.name : 'Busy' }}</button>
+                </div>
+              </div>
+              <!-- TODO: Replace with OrdersService.claimOrder(orderId, driverId) -->
+            </div>
+
+            <div *ngSwitchCase="'Assigned'">
+              <div class="driver-lock" *ngIf="sel.assignedDriverId as did">
+                Assigned to: <strong>{{ getDriverName(did) }}</strong>
+              </div>
+              <div class="assign-actions">
+                <button type="button" class="btn btn--primary" (click)="startDelivery()">Start Delivery</button>
+              </div>
+            </div>
+
+            <div *ngSwitchCase="'On The Way'">
+              <div class="assign-actions">
+                <button type="button" class="btn btn--primary" (click)="markDelivered()">Mark Delivered</button>
+              </div>
+            </div>
+
+            <div *ngSwitchCase="'Delivered'">
+              <div class="muted">Order delivered. Workflow completed.</div>
+            </div>
+          </ng-container>
+        </div>
+
+        <!-- Medical Instructions / Recipe -->
+        <div class="card recipe" [class.is-readonly]="sel.status === 'Assigned' || sel.status === 'On The Way' || sel.status === 'Delivered'">
+          <h4>Medical Instructions / Recipe</h4>
+          <div *ngIf="sel.recipeAuthor && sel.recipeCreatedAt" class="stamp">
+            <small class="muted">Last updated {{ sel.recipeCreatedAt | date:'short' }} by {{ sel.recipeAuthor }}</small>
           </div>
-          <!-- TODO: Call OrdersService.assignDriver(orderId, driverId) and refresh list -->
+          <textarea [(ngModel)]="recipeDraft" [readonly]="sel.status === 'Assigned' || sel.status === 'On The Way' || sel.status === 'Delivered'" placeholder="Dosage, timing (morning/night/before meals), and warnings..."></textarea>
+          <div class="assign-actions" *ngIf="sel.status !== 'Assigned' && sel.status !== 'On The Way' && sel.status !== 'Delivered'">
+            <button type="button" class="btn btn--primary" (click)="saveRecipe()">Save Instructions</button>
+          </div>
+          <!-- TODO: Replace with OrdersService.saveRecipe(orderId, recipeText) -->
         </div>
 
         <!-- Map -->
-        <div class="card card--map">
+        <div class="card card--map" *ngIf="sel.status === 'On The Way' || sel.status === 'Delivered'">
           <h4>Map</h4>
           <div id="ordersMap" class="map"></div>
           <!-- TODO: Real-time tracking via WebSocket to update driver location -->
@@ -159,4 +369,5 @@
       </div>
     </div>
   </div>
+  </ng-container>
 </section>
