@@ -1,0 +1,75 @@
+<div class="login-container">
+    <div class="login-card">
+
+        <!-- Header -->
+        <div class="card-header">
+            <div class="logo-circle">
+                <span>💊</span>
+            </div>
+            <h1>PharmaSys</h1>
+            <p class="subtitle">Sign in to your workspace</p>
+        </div>
+
+        <!-- Form -->
+        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+
+            <!-- Email -->
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <div class="input-wrap" [class.error]="email?.invalid && email?.touched">
+                    <span class="input-icon">✉️</span>
+                    <input type="email" id="email" formControlName="email" placeholder="name@pharmacy.tn"
+                        autocomplete="email">
+                </div>
+                <div class="error-msg" *ngIf="email?.invalid && email?.touched">
+                    <span *ngIf="email?.errors?.['required']">Email is required</span>
+                    <span *ngIf="email?.errors?.['email']">Please enter a valid email</span>
+                </div>
+            </div>
+
+            <!-- Password -->
+            <div class="form-group">
+                <label for="password">Password</label>
+                <div class="input-wrap" [class.error]="password?.invalid && password?.touched">
+                    <span class="input-icon">🔒</span>
+                    <input [type]="showPassword ? 'text' : 'password'" id="password" formControlName="password"
+                        placeholder="••••••••" autocomplete="current-password">
+                    <button type="button" class="btn-toggle" (click)="togglePasswordVisibility()">
+                        {{ showPassword ? '🙈' : '👁️' }}
+                    </button>
+                </div>
+                <div class="error-msg" *ngIf="password?.invalid && password?.touched">
+                    Password is required (min 6 chars)
+                </div>
+            </div>
+
+            <!-- Remember / Forgot -->
+            <div class="form-actions">
+                <label class="remember-me">
+                    <input type="checkbox" formControlName="rememberMe">
+                    <span>Remember me</span>
+                </label>
+                <a href="#" class="forgot-link" (click)="$event.preventDefault()">Forgot password?</a>
+            </div>
+
+            <!-- Submit -->
+            <button type="submit" class="btn-submit" [disabled]="loginForm.invalid || isLoading">
+                <span *ngIf="!isLoading">Sign In</span>
+                <span *ngIf="isLoading" class="spinner"></span>
+                <span *ngIf="isLoading">Signing in...</span>
+            </button>
+
+            <!-- Global Error -->
+            <div class="alert-error" *ngIf="errorMessage">
+                {{ errorMessage }}
+            </div>
+
+        </form>
+
+        <div class="card-footer">
+            <p>Don't have an account? <a routerLink="/sign-up">Sign up</a></p>
+            <p class="secondary-link">Need trouble accessing? <a href="#">Contact Support</a></p>
+        </div>
+
+    </div>
+</div>

@@ -1,11 +1,13 @@
 <div class="app-layout">
-  <app-header></app-header>
+  <!-- Show Header ONLY if NOT auth page -->
+  <app-header *ngIf="!isAuthPage"></app-header>
 
-  <div class="main-layout">
-    <app-side-bar></app-side-bar>
+  <div class="main-layout" [class.auth-mode]="isAuthPage">
+    <!-- Show Sidebar ONLY if NOT auth page -->
+    <app-side-bar *ngIf="!isAuthPage"></app-side-bar>
 
     <!-- REAL CONTENT WRAPPER -->
-    <div class="page-container">
+    <div class="page-container" [class.full-width]="isAuthPage">
       <router-outlet></router-outlet>
     </div>
   </div>

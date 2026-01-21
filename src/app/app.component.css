@@ -1,35 +1,39 @@
-/* ROOT */
+/* Base Layout */
 .app-layout {
-  height: 100vh;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  height: 100vh;
 }
 
-/* HEADER */
-app-header {
-  height: 64px;        /* 🔴 MUST MATCH REAL HEADER HEIGHT */
-  flex-shrink: 0;
-}
-
-/* MAIN AREA */
 .main-layout {
-  flex: 1;
   display: flex;
+  flex: 1;
   overflow: hidden;
+  /* Prevent scrolling on body, scroll inside components */
 }
 
-/* SIDEBAR */
-app-side-bar {
-  width: 240px;
-  flex-shrink: 0;
-  height: 100%;
-}
-
-/* PAGE CONTENT (THIS FIXES EVERYTHING) */
 .page-container {
   flex: 1;
-  height: 100%;
-  overflow-y: auto;   /* ✅ SCROLL HERE */
-  background: #f6faf7;
+  overflow-y: auto;
+  background-color: #f8fafc;
+  /* Matching dashboard bg */
+  transition: all 0.2s ease;
+}
+
+/* 
+   When Auth Mode is active: 
+   Sidebar is gone, so page-container naturally takes full width.
+   However, we might want to ensure no extra margins/padding interrupt the full-screen login card. 
+*/
+.main-layout.auth-mode {
+  /* Ensure it takes full height/width without header interference */
+  height: 100vh;
+}
+
+.page-container.full-width {
+  padding: 0;
+  margin: 0;
+  background: white;
+  /* Or matching login background */
+  width: 100%;
 }

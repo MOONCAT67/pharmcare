@@ -1,0 +1,154 @@
+<div class="signup-container">
+    <div class="signup-card" [class.wide]="currentStep === 2">
+
+        <!-- STEP 1: ROLE SELECTION -->
+        <div class="step-role" *ngIf="currentStep === 1">
+            <div class="card-header">
+                <h1>Create Account</h1>
+                <p class="subtitle">Join PharmaSys today. How will you use the platform?</p>
+            </div>
+
+            <div class="roles-grid">
+                <!-- Pharmacy Owner -->
+                <div class="role-card" (click)="selectRole('pharmacy')">
+                    <div class="role-icon">🏥</div>
+                    <h3>Register a Pharmacy</h3>
+                    <p>I own or manage a pharmacy and want to set up my organization.</p>
+                </div>
+
+                <!-- Employee -->
+                <div class="role-card" (click)="selectRole('employee')">
+                    <div class="role-icon">👨‍⚕️</div>
+                    <h3>Join as Employee</h3>
+                    <p>I work at a pharmacy and have an invite code or need to join.</p>
+                </div>
+            </div>
+
+            <div class="footer-link">
+                Already have an account? <a routerLink="/login">Sign In</a>
+            </div>
+        </div>
+
+
+        <!-- STEP 2: REGISTRATION FORMS -->
+        <div class="step-form" *ngIf="currentStep === 2">
+
+            <div class="form-header">
+                <button class="btn-back" (click)="goBack()">← Back</button>
+                <h2>
+                    {{ selectedRole === 'pharmacy' ? 'Pharmacy Registration' : 'Employee Registration' }}
+                </h2>
+            </div>
+
+            <!-- PHARMACY FORM -->
+            <form [formGroup]="pharmacyForm" (ngSubmit)="onSubmit()" *ngIf="selectedRole === 'pharmacy'">
+
+                <div class="form-grid">
+                    <!-- Left Col -->
+                    <div class="col">
+                        <div class="form-group">
+                            <label>Pharmacy Name</label>
+                            <input type="text" formControlName="pharmacyName" placeholder="e.g. Al-Shifa Pharmacy">
+                        </div>
+                        <div class="form-group">
+                            <label>Owner Name</label>
+                            <input type="text" formControlName="ownerName" placeholder="Original License Owner">
+                        </div>
+                        <div class="form-group">
+                            <label>Business Email</label>
+                            <input type="email" formControlName="email">
+                        </div>
+                        <div class="form-group">
+                            <label>Password</label>
+                            <input type="password" formControlName="password" placeholder="Min. 8 characters">
+                        </div>
+                    </div>
+
+                    <!-- Right Col -->
+                    <div class="col">
+                        <div class="form-group">
+                            <label>Phone Number</label>
+                            <input type="tel" formControlName="phone" placeholder="+216 ...">
+                        </div>
+                        <div class="form-group">
+                            <label>City</label>
+                            <input type="text" formControlName="city">
+                        </div>
+                        <div class="form-group">
+                            <label>Full Address</label>
+                            <textarea formControlName="address" rows="1"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Confirm Password</label>
+                            <input type="password" formControlName="confirmPassword">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn-submit" [disabled]="pharmacyForm.invalid || isLoading">
+                        <span *ngIf="isLoading" class="spinner"></span>
+                        {{ isLoading ? 'Creating Account...' : 'Register Pharmacy' }}
+                    </button>
+                </div>
+
+            </form>
+
+            <!-- EMPLOYEE FORM -->
+            <form [formGroup]="employeeForm" (ngSubmit)="onSubmit()" *ngIf="selectedRole === 'employee'">
+
+                <div class="form-grid sm-grid">
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <input type="text" formControlName="fullName" placeholder="Your Name">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Professional Email</label>
+                        <input type="email" formControlName="email">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Phone Number</label>
+                        <input type="tel" formControlName="phone">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Pharmacy Access Code</label>
+                        <input type="text" formControlName="pharmacyCode" placeholder="Ask your admin">
+                        <small class="hint">Enter the code provided by your pharmacy admin.</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Role</label>
+                        <select formControlName="role">
+                            <option value="Pharmacist">Pharmacist</option>
+                            <option value="Assistant">Assistant</option>
+                            <option value="Delivery">Delivery Agent</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" formControlName="password">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Confirm Password</label>
+                        <input type="password" formControlName="confirmPassword">
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn-submit" [disabled]="employeeForm.invalid || isLoading">
+                        <span *ngIf="isLoading" class="spinner"></span>
+                        {{ isLoading ? 'Joining...' : 'Create Employee Account' }}
+                    </button>
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+</div>
