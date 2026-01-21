@@ -1,0 +1,149 @@
+<div class="reports-dashboard">
+
+    <header class="page-header">
+        <div class="header-text">
+            <h1>Client Feedback</h1>
+            <p class="subtitle">Monitor delivery satisfaction and client reviews</p>
+        </div>
+        <div class="date-range">Last 30 Days ▼</div>
+    </header>
+
+    <!-- 1. KPIs -->
+    <section class="kpi-row">
+        <div class="kpi-card">
+            <div class="kpi-val">{{ kpiTotal }}</div>
+            <div class="kpi-label">Total Reviews</div>
+        </div>
+        <div class="kpi-card pos-card">
+            <div class="kpi-val">{{ kpiPositive }}</div>
+            <div class="kpi-label">Positive 😊</div>
+        </div>
+        <div class="kpi-card neu-card">
+            <div class="kpi-val">{{ kpiNeutral }}</div>
+            <div class="kpi-label">Neutral 😐</div>
+        </div>
+        <div class="kpi-card neg-card">
+            <div class="kpi-val">{{ kpiNegative }}</div>
+            <div class="kpi-label">Negative 😠</div>
+        </div>
+    </section>
+
+    <!-- 2. Filters -->
+    <section class="filters-bar">
+        <div class="search-wrap">
+            <span class="icon">🔍</span>
+            <input type="text" [(ngModel)]="searchTerm" (input)="applyFilters()"
+                placeholder="Search client, delivery ID...">
+        </div>
+
+        <div class="filter-group">
+            <select [(ngModel)]="filterSentiment" (change)="applyFilters()">
+                <option value="All">All Feedbacks</option>
+                <option value="Positive">Positive Only</option>
+                <option value="Neutral">Neutral Only</option>
+                <option value="Negative">Negative Only</option>
+            </select>
+        </div>
+    </section>
+
+    <!-- 3. Main Content -->
+    <div class="content-wrapper">
+
+        <!-- List -->
+        <div class="feedback-list">
+            <div class="list-header">
+                <span>Client</span>
+                <span>Delivery Details</span>
+                <span>Rating & Comment</span>
+                <span>Status</span>
+            </div>
+
+            <div class="feedback-item" *ngFor="let item of displayedFeedback" (click)="selectItem(item)"
+                [class.active]="selectedItem === item">
+
+                <!-- Col 1: Client -->
+                <div class="col-client">
+                    <div class="avatar-ph">{{ item.clientName.charAt(0) }}</div>
+                    <div class="client-info">
+                        <span class="c-name">{{ item.clientName }}</span>
+                        <span class="c-sub">{{ item.clientLocation }}</span>
+                    </div>
+                </div>
+
+                <!-- Col 2: Delivery -->
+                <div class="col-del">
+                    <span class="d-id">{{ item.deliveryId }}</span>
+                    <span class="d-agent">Ag: {{ item.deliveryAgent }}</span>
+                    <span class="d-date">{{ item.deliveryDate | date:'shortDate' }}</span>
+                </div>
+
+                <!-- Col 3: Comment -->
+                <div class="col-msg">
+                    <div class="rating-stars" [ngClass]="getStarClass(item.rating)">
+                        <span *ngFor="let s of getStarsArray(item.rating)">★</span>
+                    </div>
+                    <p class="msg-preview">"{{ item.comment }}"</p>
+                </div>
+
+                <!-- Col 4: Badge -->
+                <div class="col-status">
+                    <span class="sentiment-badge" [ngClass]="getSentimentClass(item.sentiment)">
+                        {{ item.sentiment }}
+                    </span>
+                </div>
+            </div>
+
+            <div class="empty-state" *ngIf="displayedFeedback.length === 0">
+                No feedback found matching filters.
+            </div>
+        </div>
+
+        <!-- Detail Panel -->
+        <div class="detail-panel" *ngIf="selectedItem">
+            <div class="panel-header">
+                <h3>Feedback Details</h3>
+                <button class="icon-btn" (click)="closeDetails()">×</button>
+            </div>
+
+            <div class="panel-body">
+                <div class="p-section">
+                    <label>Client</label>
+                    <p class="p-name">{{ selectedItem.clientName }}</p>
+                    <p class="p-row">📞 {{ selectedItem.clientPhone }}</p>
+                    <p class="p-row">📍 {{ selectedItem.clientLocation }}</p>
+                </div>
+
+                <div class="p-section">
+                    <label>Delivery</label>
+                    <div class="del-box">
+                        <div class="row-sb">
+                            <strong>{{ selectedItem.deliveryId }}</strong>
+                            <span>{{ selectedItem.deliveryDate | date:'short' }}</span>
+                        </div>
+                        <p>Agent: {{ selectedItem.deliveryAgent }}</p>
+                    </div>
+                </div>
+
+                <div class="p-section">
+                    <label>Review</label>
+                    <div class="full-rating" [ngClass]="getStarClass(selectedItem.rating)">
+                        <span *ngFor="let s of getStarsArray(selectedItem.rating)">★</span>
+                        <span class="num-rating">{{ selectedItem.rating }}/5</span>
+                    </div>
+                    <div class="full-comment">
+                        "{{ selectedItem.comment }}"
+                    </div>
+                    <div class="tags-row" *ngIf="selectedItem.tags && selectedItem.tags.length">
+                        <span class="tag" *ngFor="let t of selectedItem.tags">#{{ t }}</span>
+                    </div>
+                </div>
+
+                <div class="p-actions">
+                    <button class="btn btn-outline">Call Client</button>
+                    <button class="btn btn-primary">Mark Resolved</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>

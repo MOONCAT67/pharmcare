@@ -1,0 +1,150 @@
+<div class="sales-dashboard">
+    <!-- Header -->
+    <header class="page-header">
+        <div class="header-text">
+            <h1>Sales & Analytics</h1>
+            <p class="subtitle">Real-time overview of pharmacy sales performance</p>
+        </div>
+        <div class="last-updated">Updated: Now</div>
+    </header>
+
+    <!-- 1. KPI Cards -->
+    <section class="kpi-grid">
+        <div class="kpi-card card--revenue">
+            <div class="kpi-icon">💰</div>
+            <div class="kpi-content">
+                <div class="kpi-label">Total Revenue</div>
+                <div class="kpi-value">{{ kpiTotalRevenue | currency:'TND':'symbol':'1.2-2' }}</div>
+            </div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-icon">💊</div>
+            <div class="kpi-content">
+                <div class="kpi-label">Medicines Sold</div>
+                <div class="kpi-value">{{ kpiTotalMedicines }}</div>
+            </div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-icon">🧾</div>
+            <div class="kpi-content">
+                <div class="kpi-label">Orders</div>
+                <div class="kpi-value">{{ kpiTotalOrders }}</div>
+            </div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-icon">📈</div>
+            <div class="kpi-content">
+                <div class="kpi-label">Avg. Order Value</div>
+                <div class="kpi-value">{{ kpiAvgOrderValue | currency:'TND':'symbol':'1.2-2' }}</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 2. Filters Bar -->
+    <section class="filters-bar">
+        <div class="filter-inputs">
+            <div class="search-box">
+                <span class="search-icon">🔍</span>
+                <input type="text" [(ngModel)]="searchTerm" (input)="applyFilters()"
+                    placeholder="Search medicine name...">
+            </div>
+
+            <select [(ngModel)]="filterCategory" (change)="applyFilters()">
+                <option value="">All Categories</option>
+                <option value="Prescription">Prescription</option>
+                <option value="OTC">OTC</option>
+                <option value="Parapharmacy">Parapharmacy</option>
+            </select>
+
+            <select [(ngModel)]="filterPayment" (change)="applyFilters()">
+                <option value="">All Payment Methods</option>
+                <option value="Cash">Cash</option>
+                <option value="Card">Card</option>
+                <option value="Insurance">Insurance</option>
+            </select>
+
+            <input type="date" [(ngModel)]="filterDate" (change)="applyFilters()" class="date-input">
+        </div>
+        <button class="btn-reset" (click)="resetFilters()"
+            *ngIf="searchTerm || filterCategory || filterPayment || filterDate">
+            Reset Filters
+        </button>
+    </section>
+
+    <!-- 3. Main Content Split -->
+    <div class="content-wrapper">
+
+        <!-- Recent Sold Grid -->
+        <div class="section-container">
+            <div class="section-header">
+                <h3>Recently Sold Items</h3>
+                <small class="muted">Live feed of processed items</small>
+            </div>
+            <div class="sales-grid">
+                <div class="sale-card" *ngFor="let s of displayedSales | slice:0:8">
+                    <div class="sale-img-wrap">
+                        <img [src]="s.medicineImage" [alt]="s.medicineName" class="sale-img">
+                    </div>
+                    <div class="sale-details">
+                        <div class="sale-head">
+                            <span class="sale-name" [title]="s.medicineName">{{ s.medicineName }}</span>
+                            <span class="sale-price">{{ s.totalPrice | currency:'TND':'symbol':'1.2-2' }}</span>
+                        </div>
+                        <div class="sale-meta">
+                            <span class="badge" [ngClass]="'badge--' + s.category.toLowerCase()">{{ s.category }}</span>
+                            <span class="qty">x{{ s.quantity }}</span>
+                        </div>
+                        <div class="sale-time">
+                            {{ s.soldAt | date:'shortTime' }} • {{ s.paymentMethod }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Table -->
+        <div class="section-container table-container">
+            <div class="section-header">
+                <h3>Sales Register</h3>
+                <small class="muted">Showing {{ displayedSales.length }} transactions</small>
+            </div>
+            <div class="table-wrap">
+                <table class="sales-table">
+                    <thead>
+                        <tr>
+                            <th class="col-med">Medicine</th>
+                            <th>Category</th>
+                            <th>Qty</th>
+                            <th>Unit Price</th>
+                            <th>Total</th>
+                            <th>Order ID</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let s of displayedSales">
+                            <td class="col-med">
+                                <div class="med-cell">
+                                    <span class="med-text">{{ s.medicineName }}</span>
+                                </div>
+                            </td>
+                            <td><span class="badge badge--sm" [ngClass]="'badge--' + s.category.toLowerCase()">{{
+                                    s.category }}</span></td>
+                            <td class="font-bold">{{ s.quantity }}</td>
+                            <td class="mono mute">{{ s.unitPrice | number:'1.2-2' }}</td>
+                            <td class="mono font-bold">{{ s.totalPrice | number:'1.2-2' }} TND</td>
+                            <td class="mono text-sm">{{ s.orderId }}</td>
+                            <td class="text-sm">{{ s.soldAt | date:'mediumDate' }}</td>
+                            <td>
+                                <span class="status-dot" [class.refunded]="s.status === 'Refunded'"></span>
+                                {{ s.status }}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>

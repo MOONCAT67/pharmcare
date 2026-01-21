@@ -9,7 +9,8 @@
         <small class="muted">{{ orders.length }} total</small>
       </div>
       <div class="queue">
-        <button type="button" class="queue-item" *ngFor="let o of orders" (click)="selectOrder(o)" [class.is-active]="o === selectedOrder">
+        <button type="button" class="queue-item" *ngFor="let o of orders" (click)="selectOrder(o)"
+          [class.is-active]="o === selectedOrder">
           <div class="q-top">
             <span class="q-name">{{ o.client.name }}</span>
             <span class="q-time mono">{{ o.time }}</span>
@@ -25,21 +26,39 @@
     <main class="col col-workspace" *ngIf="selectedOrder as sel">
       <!-- Client -->
       <section class="ws-section client">
-        <div class="sec-h"><h3>Client</h3></div>
+        <div class="sec-h">
+          <h3>Client</h3>
+        </div>
         <div class="client-grid">
-          <div><div class="label">Name</div><div class="value">{{ sel.client.name }}</div></div>
-          <div><div class="label">Age</div><div class="value">{{ sel.client.age }}</div></div>
-          <div><div class="label">Phone</div><div class="value">{{ sel.client.phone }}</div></div>
-          <div class="span2"><div class="label">Address</div><div class="value">{{ sel.client.address }}</div></div>
+          <div>
+            <div class="label">Name</div>
+            <div class="value">{{ sel.client.name }}</div>
+          </div>
+          <div>
+            <div class="label">Age</div>
+            <div class="value">{{ sel.client.age }}</div>
+          </div>
+          <div>
+            <div class="label">Phone</div>
+            <div class="value">{{ sel.client.phone }}</div>
+          </div>
+          <div class="span2">
+            <div class="label">Address</div>
+            <div class="value">{{ sel.client.address }}</div>
+          </div>
         </div>
       </section>
 
       <!-- Prescription Viewer -->
       <section class="ws-section prescription">
-        <div class="sec-h"><h3>Prescription</h3></div>
+        <div class="sec-h">
+          <h3>Prescription</h3>
+        </div>
         <div class="tabs">
-          <button type="button" class="tab" [class.is-active]="activeTab === 'text'" (click)="setTab('text')" [disabled]="!sel.prescriptionText">Text</button>
-          <button type="button" class="tab" [class.is-active]="activeTab === 'image'" (click)="setTab('image')" [disabled]="!sel.prescriptionImageUrl">Image</button>
+          <button type="button" class="tab" [class.is-active]="activeTab === 'text'" (click)="setTab('text')"
+            [disabled]="!sel.prescriptionText">Text</button>
+          <button type="button" class="tab" [class.is-active]="activeTab === 'image'" (click)="setTab('image')"
+            [disabled]="!sel.prescriptionImageUrl">Image</button>
         </div>
         <div class="tab-panel" *ngIf="activeTab === 'text'">
           <pre class="rx-text">{{ sel.prescriptionText || 'No text prescription provided.' }}</pre>
@@ -58,7 +77,9 @@
 
       <!-- Medicines Verification -->
       <section class="ws-section meds">
-        <div class="sec-h"><h3>Medicines</h3></div>
+        <div class="sec-h">
+          <h3>Medicines</h3>
+        </div>
         <input type="text" [(ngModel)]="medSearch" placeholder="Search medicines" />
         <div class="meds-list">
           <div class="med-row" *ngFor="let m of visibleMedicines">
@@ -67,7 +88,8 @@
               <div class="med-name">{{ m.name }}</div>
             </div>
             <div class="med-right">
-              <span class="status-badge" [ngClass]="!m.existsInStock ? 'badge--missing' : (m.recipeValidated ? 'badge--available' : 'badge--missing')">
+              <span class="status-badge"
+                [ngClass]="!m.existsInStock ? 'badge--missing' : (m.recipeValidated ? 'badge--available' : 'badge--missing')">
                 {{ !m.existsInStock ? 'Missing' : (m.recipeValidated ? 'Validated' : 'Incomplete') }}
               </span>
             </div>
@@ -76,35 +98,149 @@
 
         <!-- Per-medicine editor -->
         <div class="meds-list">
-          <div class="med-row" *ngFor="let m of visibleMedicines">
-            <div class="med-left">
-              <div class="med-name">{{ m.name }}</div>
-            </div>
-            <div class="med-right">
-              <label style="margin-right:6px"><input type="radio" name="exist-{{m.id}}" [checked]="m.existsInStock" (change)="onAvailabilityChange(sel, m, true)" /> Exists</label>
-              <label><input type="radio" name="exist-{{m.id}}" [checked]="!m.existsInStock" (change)="onAvailabilityChange(sel, m, false)" /> Does not exist</label>
-            </div>
-            <div class="med-editor" style="grid-column: 1 / -1; margin-top:8px" [class.disabled]="!m.existsInStock">
-              <div class="form-grid">
-                <label>Dosage<input type="text" [(ngModel)]="m.dosage" [disabled]="!m.existsInStock || m.recipeValidated" /></label>
-                <label>Frequency<input type="text" [(ngModel)]="m.frequency" placeholder="e.g. 2x/day" [disabled]="!m.existsInStock || m.recipeValidated" /></label>
-                <label>Duration<input type="text" [(ngModel)]="m.duration" placeholder="e.g. 7 days" [disabled]="!m.existsInStock || m.recipeValidated" /></label>
-                <div>
-                  <div class="label">Intake timing</div>
-                  <label><input type="checkbox" [(ngModel)]="m.intakeTimes.morning" [disabled]="!m.existsInStock || m.recipeValidated" /> Morning</label>
-                  <label><input type="checkbox" [(ngModel)]="m.intakeTimes.noon" [disabled]="!m.existsInStock || m.recipeValidated" /> Noon</label>
-                  <label><input type="checkbox" [(ngModel)]="m.intakeTimes.night" [disabled]="!m.existsInStock || m.recipeValidated" /> Night</label>
-                  <label><input type="checkbox" [(ngModel)]="m.intakeTimes.beforeMeals" [disabled]="!m.existsInStock || m.recipeValidated" /> Before meals</label>
+          <div class="prescription-card" *ngFor="let m of visibleMedicines" [class.is-validated]="m.recipeValidated"
+            [class.is-missing]="!m.existsInStock">
+            <!-- Header -->
+            <div class="rx-header">
+              <div class="rx-meta">
+                <img *ngIf="m.imageUrl" [src]="m.imageUrl" [alt]="m.name" class="rx-thumb" />
+                <div class="rx-title">
+                  <div class="med-name">{{ m.name }}</div>
+                  <div class="rx-status">
+                    <span *ngIf="!m.existsInStock" class="status-badge-lg badge--missing">⛔ Not Available</span>
+                    <span *ngIf="m.existsInStock && !m.recipeValidated" class="status-badge-lg badge--incomplete">⚠
+                      Incomplete</span>
+                    <span *ngIf="m.existsInStock && m.recipeValidated" class="status-badge-lg badge--validated">✅
+                      Validated</span>
+                  </div>
                 </div>
-                <label>Warnings<textarea rows="2" [(ngModel)]="m.warnings" [disabled]="!m.existsInStock || m.recipeValidated"></textarea></label>
               </div>
-              <div class="stack">
-                <button class="btn btn--primary" type="button" (click)="validateMedicine(m)" [disabled]="!canValidateMedicine(m) || !m.existsInStock || m.recipeValidated">Validate</button>
+              <div class="rx-availability">
+                <label class="radio-pill" [class.is-checked]="m.existsInStock">
+                  <input type="radio" name="exist-{{m.id}}" [checked]="m.existsInStock"
+                    (change)="onAvailabilityChange(sel, m, true)" />
+                  Available
+                </label>
+                <label class="radio-pill" [class.is-checked]="!m.existsInStock">
+                  <input type="radio" name="exist-{{m.id}}" [checked]="!m.existsInStock"
+                    (change)="onAvailabilityChange(sel, m, false)" />
+                  Unavailable
+                </label>
               </div>
             </div>
+
+            <!-- Body: Editor (Only if available and NOT validated) -->
+            <div class="rx-body" *ngIf="m.existsInStock && !m.recipeValidated">
+              <!-- 1. Dosage (Primary) -->
+              <div class="rx-section">
+                <label class="sec-label">Dosage</label>
+                <div class="dosage-group">
+                  <input type="text" [(ngModel)]="m.dosage" class="dosage-input" placeholder="500" />
+                  <span class="unit-hint">mg / ml / tablet</span>
+                </div>
+                <small class="helper-text">Example: 500 mg per intake</small>
+              </div>
+
+              <!-- 2. Intake Schedule (Visual) -->
+              <div class="rx-section">
+                <label class="sec-label">Intake Schedule</label>
+                <div class="intake-toggles">
+                  <button type="button" class="intake-btn" [class.is-selected]="m.intakeTimes.morning"
+                    (click)="m.intakeTimes.morning = !m.intakeTimes.morning">
+                    <span class="emoji">🌅</span> Morning
+                  </button>
+                  <button type="button" class="intake-btn" [class.is-selected]="m.intakeTimes.noon"
+                    (click)="m.intakeTimes.noon = !m.intakeTimes.noon">
+                    <span class="emoji">☀️</span> Noon
+                  </button>
+                  <button type="button" class="intake-btn" [class.is-selected]="m.intakeTimes.evening"
+                    (click)="m.intakeTimes.evening = !m.intakeTimes.evening">
+                    <span class="emoji">🌇</span> Evening
+                  </button>
+                  <button type="button" class="intake-btn" [class.is-selected]="m.intakeTimes.night"
+                    (click)="m.intakeTimes.night = !m.intakeTimes.night">
+                    <span class="emoji">🌙</span> Night
+                  </button>
+                  <button type="button" class="intake-btn" [class.is-selected]="m.intakeTimes.beforeMeals"
+                    (click)="m.intakeTimes.beforeMeals = !m.intakeTimes.beforeMeals">
+                    <span class="emoji">🍽️</span> Before meals
+                  </button>
+                </div>
+              </div>
+
+              <!-- 3. Frequency & Duration -->
+              <div class="rx-section-group">
+                <div class="rx-section">
+                  <label class="sec-label">Frequency</label>
+                  <input type="text" [(ngModel)]="m.frequency" placeholder="e.g. 2x/day" class="std-input" />
+                </div>
+                <div class="rx-section">
+                  <label class="sec-label">Duration</label>
+                  <div class="duration-control">
+                    <!-- Quick selects -->
+                    <button type="button" class="dur-chip" (click)="m.duration='3 days'">3d</button>
+                    <button type="button" class="dur-chip" (click)="m.duration='5 days'">5d</button>
+                    <button type="button" class="dur-chip" (click)="m.duration='7 days'">7d</button>
+                    <input type="text" [(ngModel)]="m.duration" placeholder="Custom" class="std-input duration-input" />
+                  </div>
+                </div>
+              </div>
+
+              <!-- 4. Warnings -->
+              <div class="rx-section">
+                <label class="sec-label">Warnings & Restrictions</label>
+                <textarea rows="2" [(ngModel)]="m.warnings" class="soft-textarea"
+                  placeholder="Age limit, food interactions, pregnancy..."></textarea>
+              </div>
+
+              <!-- Action -->
+              <button class="btn btn--primary btn--full btn--validate" type="button" (click)="validateMedicine(m)"
+                [disabled]="!canValidateMedicine(m)">
+                Validate Medicine Recipe
+              </button>
+            </div>
+
+            <!-- Read-only Summary (Validated) -->
+            <div class="rx-summary" *ngIf="m.existsInStock && m.recipeValidated">
+              <div class="summary-grid">
+                <div class="sum-item">
+                  <div class="sum-label">Dosage</div>
+                  <div class="sum-val">{{ m.dosage }}</div>
+                </div>
+                <div class="sum-item">
+                  <div class="sum-label">Intake</div>
+                  <div class="sum-val">
+                    <ng-container *ngIf="m.intakeTimes.morning">Morning </ng-container>
+                    <ng-container *ngIf="m.intakeTimes.noon">Noon </ng-container>
+                    <ng-container *ngIf="m.intakeTimes.night">Night </ng-container>
+                    <ng-container *ngIf="m.intakeTimes.beforeMeals">Before meals</ng-container>
+                  </div>
+                </div>
+                <div class="sum-item">
+                  <div class="sum-label">Freq</div>
+                  <div class="sum-val">{{ m.frequency }}</div>
+                </div>
+                <div class="sum-item">
+                  <div class="sum-label">Duration</div>
+                  <div class="sum-val">{{ m.duration }}</div>
+                </div>
+                <div class="sum-item span-col" *ngIf="m.warnings">
+                  <div class="sum-label">Warnings</div>
+                  <div class="sum-val warn-text">{{ m.warnings }}</div>
+                </div>
+              </div>
+              <button type="button" class="btn btn--ghost btn--sm edit-btn" (click)="m.recipeValidated = false">
+                ✎ Edit recipe
+              </button>
+            </div>
+
+            <!-- Missing Message -->
+            <div class="rx-missing-msg" *ngIf="!m.existsInStock">
+              Medicine marked as unavailable.
+            </div>
+
           </div>
         </div>
-
         <!-- Sticky Decision Bar: progress + gated actions -->
         <div class="decision-bar">
           <div class="muted" style="margin-right:auto">
@@ -115,9 +251,12 @@
               Order declined • Forwarded to: {{ sel.forwardedTo || 'Another pharmacy' }}
             </ng-template>
           </div>
-          <button type="button" class="btn" (click)="sendCombinedRecipe()" [disabled]="!isOrderFullyValidated(sel)">Send to client</button>
-          <button type="button" class="btn" (click)="printCombinedRecipe()" [disabled]="!isOrderFullyValidated(sel)">Print</button>
-          <button type="button" class="btn btn--primary" (click)="markWaitingForDelivery()" [disabled]="!isOrderFullyValidated(sel)">Move to Waiting for Delivery</button>
+          <button type="button" class="btn" (click)="sendCombinedRecipe()" [disabled]="!isOrderFullyValidated(sel)">Send
+            to client</button>
+          <button type="button" class="btn" (click)="printCombinedRecipe()"
+            [disabled]="!isOrderFullyValidated(sel)">Print</button>
+          <button type="button" class="btn btn--primary" (click)="markWaitingForDelivery()"
+            [disabled]="!isOrderFullyValidated(sel)">Move to Waiting for Delivery</button>
         </div>
       </section>
     </main>
@@ -130,17 +269,23 @@
             <h3>Actions</h3>
             <p class="muted">Complete each medicine recipe. Actions unlock when all medicines are validated.</p>
             <div class="stack">
-              <button class="btn" type="button" (click)="sendCombinedRecipe()" [disabled]="!isOrderFullyValidated(sel)">Send to client</button>
-              <button class="btn" type="button" (click)="printCombinedRecipe()" [disabled]="!isOrderFullyValidated(sel)">Print</button>
-              <button class="btn btn--primary" type="button" (click)="markWaitingForDelivery()" [disabled]="!isOrderFullyValidated(sel)">Move to Waiting for Delivery</button>
+              <button class="btn" type="button" (click)="sendCombinedRecipe()"
+                [disabled]="!isOrderFullyValidated(sel)">Send to client</button>
+              <button class="btn" type="button" (click)="printCombinedRecipe()"
+                [disabled]="!isOrderFullyValidated(sel)">Print</button>
+              <button class="btn btn--primary" type="button" (click)="markWaitingForDelivery()"
+                [disabled]="!isOrderFullyValidated(sel)">Move to Waiting for Delivery</button>
             </div>
           </div>
           <div *ngSwitchCase="'Prepared'">
             <h3>Actions</h3>
             <div class="stack">
-              <button class="btn" type="button" (click)="sendCombinedRecipe()" [disabled]="!isOrderFullyValidated(sel)">Send to client</button>
-              <button class="btn" type="button" (click)="printCombinedRecipe()" [disabled]="!isOrderFullyValidated(sel)">Print</button>
-              <button class="btn btn--primary" type="button" (click)="markWaitingForDelivery()" [disabled]="!isOrderFullyValidated(sel)">Move to Waiting for Delivery</button>
+              <button class="btn" type="button" (click)="sendCombinedRecipe()"
+                [disabled]="!isOrderFullyValidated(sel)">Send to client</button>
+              <button class="btn" type="button" (click)="printCombinedRecipe()"
+                [disabled]="!isOrderFullyValidated(sel)">Print</button>
+              <button class="btn btn--primary" type="button" (click)="markWaitingForDelivery()"
+                [disabled]="!isOrderFullyValidated(sel)">Move to Waiting for Delivery</button>
             </div>
           </div>
           <div *ngSwitchCase="'Waiting for Delivery'">
@@ -148,7 +293,8 @@
             <div class="drivers-list">
               <div class="driver-row" *ngFor="let d of drivers">
                 <div>{{ d.name }} • {{ d.area }}</div>
-                <button class="btn" type="button" [disabled]="!d.available" (click)="claimOrder(sel.id, d.id)">{{ d.available ? 'Claim as ' + d.name : 'Busy' }}</button>
+                <button class="btn" type="button" [disabled]="!d.available" (click)="claimOrder(sel.id, d.id)">{{
+                  d.available ? 'Claim as ' + d.name : 'Busy' }}</button>
               </div>
             </div>
           </div>
@@ -189,204 +335,213 @@
 
   <!-- Legacy UI disabled to avoid reuse of old layout -->
   <ng-container *ngIf="false">
-  <!-- Filters Top -->
-  <div class="filters">
-    <div class="field">
-      <label for="search">Search</label>
-      <input id="search" type="text" [(ngModel)]="searchQuery" placeholder="Search by ID, client, address" />
-    </div>
-
-    <div class="field">
-      <label for="status">Status</label>
-      <select id="status" [(ngModel)]="statusFilter">
-        <option value="">All</option>
-        <option value="New">New</option>
-        <option value="Prepared">Prepared</option>
-        <option value="Waiting for Delivery">Waiting for Delivery</option>
-        <option value="Assigned">Assigned</option>
-        <option value="On The Way">On The Way</option>
-        <option value="Delivered">Delivered</option>
-      </select>
-    </div>
-
-    <div class="field">
-      <label for="date">Date</label>
-      <select id="date" [(ngModel)]="dateFilter">
-        <option value="">All</option>
-        <option value="today">Today</option>
-        <option value="week">This Week</option>
-      </select>
-    </div>
-  </div>
-
-  <!-- Main Layout: List + Details -->
-  <div class="orders-layout">
-    <!-- Orders Table -->
-    <div class="panel panel--list">
-      <div class="panel-header">
-        <h3>Orders</h3>
-        <small>{{ filteredOrders.length }} results</small>
+    <!-- Filters Top -->
+    <div class="filters">
+      <div class="field">
+        <label for="search">Search</label>
+        <input id="search" type="text" [(ngModel)]="searchQuery" placeholder="Search by ID, client, address" />
       </div>
-      <div class="table-wrap">
-        <table class="table">
-          <thead>
-            <tr>
-              <th>Order ID</th>
-              <th>Client</th>
-              <th>Type</th>
-              <th>Status</th>
-              <th>Time</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let o of filteredOrders" (click)="selectOrder(o)" [class.is-active]="o === selectedOrder">
-              <td class="mono">{{ o.id }}</td>
-              <td>
-                <div class="client">
-                  <div class="client__name">{{ o.client.name }}</div>
-                  <small class="muted">{{ o.client.address }}</small>
-                </div>
-              </td>
-              <td>
-                <span class="badge badge--type" [class.is-prescription]="o.type === 'Prescription'">{{ o.type }}</span>
-              </td>
-              <td>
-                <span class="badge"
-                  [ngClass]="{
+
+      <div class="field">
+        <label for="status">Status</label>
+        <select id="status" [(ngModel)]="statusFilter">
+          <option value="">All</option>
+          <option value="New">New</option>
+          <option value="Prepared">Prepared</option>
+          <option value="Waiting for Delivery">Waiting for Delivery</option>
+          <option value="Assigned">Assigned</option>
+          <option value="On The Way">On The Way</option>
+          <option value="Delivered">Delivered</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="date">Date</label>
+        <select id="date" [(ngModel)]="dateFilter">
+          <option value="">All</option>
+          <option value="today">Today</option>
+          <option value="week">This Week</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Main Layout: List + Details -->
+    <div class="orders-layout">
+      <!-- Orders Table -->
+      <div class="panel panel--list">
+        <div class="panel-header">
+          <h3>Orders</h3>
+          <small>{{ filteredOrders.length }} results</small>
+        </div>
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Order ID</th>
+                <th>Client</th>
+                <th>Type</th>
+                <th>Status</th>
+                <th>Time</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let o of filteredOrders" (click)="selectOrder(o)" [class.is-active]="o === selectedOrder">
+                <td class="mono">{{ o.id }}</td>
+                <td>
+                  <div class="client">
+                    <div class="client__name">{{ o.client.name }}</div>
+                    <small class="muted">{{ o.client.address }}</small>
+                  </div>
+                </td>
+                <td>
+                  <span class="badge badge--type" [class.is-prescription]="o.type === 'Prescription'">{{ o.type
+                    }}</span>
+                </td>
+                <td>
+                  <span class="badge" [ngClass]="{
                     'badge--new': o.status === 'New',
                     'badge--prepared': o.status === 'Prepared',
                     'badge--waiting': o.status === 'Waiting for Delivery',
                     'badge--assigned': o.status === 'Assigned',
                     'badge--ontheway': o.status === 'On The Way',
                     'badge--delivered': o.status === 'Delivered'
-                  }"
-                >{{ o.status }}</span>
-              </td>
-              <td class="mono">{{ o.time }}</td>
-              <td>
-                <button type="button" class="btn btn--ghost" (click)="$event.stopPropagation(); selectOrder(o)">View</button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- Details Panel -->
-    <div class="panel panel--details" *ngIf="selectedOrder as sel">
-      <div class="panel-header">
-        <h3>Order Details</h3>
-        <small class="mono">{{ sel.id }}</small>
+                  }">{{ o.status }}</span>
+                </td>
+                <td class="mono">{{ o.time }}</td>
+                <td>
+                  <button type="button" class="btn btn--ghost"
+                    (click)="$event.stopPropagation(); selectOrder(o)">View</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
 
-      <div class="details">
-        <!-- Client Info -->
-        <div class="card">
-          <h4>Client</h4>
-          <div class="grid-2">
-            <div>
-              <div class="label">Name</div>
-              <div class="value">{{ sel.client.name }}</div>
+      <!-- Details Panel -->
+      <div class="panel panel--details" *ngIf="selectedOrder as sel">
+        <div class="panel-header">
+          <h3>Order Details</h3>
+          <small class="mono">{{ sel.id }}</small>
+        </div>
+
+        <div class="details">
+          <!-- Client Info -->
+          <div class="card">
+            <h4>Client</h4>
+            <div class="grid-2">
+              <div>
+                <div class="label">Name</div>
+                <div class="value">{{ sel.client.name }}</div>
+              </div>
+              <div>
+                <div class="label">Phone</div>
+                <div class="value">{{ sel.client.phone }}</div>
+              </div>
             </div>
-            <div>
-              <div class="label">Phone</div>
-              <div class="value">{{ sel.client.phone }}</div>
+            <div class="label">Address</div>
+            <div class="value">{{ sel.client.address }}</div>
+          </div>
+
+          <!-- Order Content -->
+          <div class="card">
+            <h4>Order Content</h4>
+            <ul class="items">
+              <li *ngFor="let it of sel.items">{{ it }}</li>
+            </ul>
+          </div>
+
+          <!-- Prescription Preview -->
+          <div class="card" *ngIf="sel.prescriptionImageUrl">
+            <h4>Prescription</h4>
+            <img [src]="sel.prescriptionImageUrl" alt="Prescription" class="rx-img" />
+          </div>
+
+          <!-- Timeline -->
+          <div class="card">
+            <h4>Timeline</h4>
+            <div class="timeline">
+              <div class="step" [class.done]="true">New</div>
+              <div class="step"
+                [class.done]="sel.status === 'Prepared' || sel.status === 'Waiting for Delivery' || sel.status === 'Assigned' || sel.status === 'On The Way' || sel.status === 'Delivered'">
+                Prepared</div>
+              <div class="step"
+                [class.done]="sel.status === 'Waiting for Delivery' || sel.status === 'Assigned' || sel.status === 'On The Way' || sel.status === 'Delivered'">
+                Waiting for Delivery</div>
+              <div class="step"
+                [class.done]="sel.status === 'Assigned' || sel.status === 'On The Way' || sel.status === 'Delivered'">
+                Assigned</div>
+              <div class="step" [class.done]="sel.status === 'On The Way' || sel.status === 'Delivered'">On The Way
+              </div>
+              <div class="step" [class.done]="sel.status === 'Delivered'">Delivered</div>
             </div>
           </div>
-          <div class="label">Address</div>
-          <div class="value">{{ sel.client.address }}</div>
-        </div>
 
-        <!-- Order Content -->
-        <div class="card">
-          <h4>Order Content</h4>
-          <ul class="items">
-            <li *ngFor="let it of sel.items">{{ it }}</li>
-          </ul>
-        </div>
+          <!-- Delivery Workflow -->
+          <div class="card">
+            <h4>Delivery Workflow</h4>
+            <ng-container [ngSwitch]="sel.status">
+              <div *ngSwitchCase="'New'" class="assign-actions">
+                <button type="button" class="btn btn--primary" (click)="markPrepared()">Mark Prepared</button>
+              </div>
 
-        <!-- Prescription Preview -->
-        <div class="card" *ngIf="sel.prescriptionImageUrl">
-          <h4>Prescription</h4>
-          <img [src]="sel.prescriptionImageUrl" alt="Prescription" class="rx-img" />
-        </div>
+              <div *ngSwitchCase="'Prepared'" class="assign-actions">
+                <button type="button" class="btn btn--primary" (click)="moveToWaitingForDelivery()">Move to Waiting for
+                  Delivery</button>
+              </div>
 
-        <!-- Timeline -->
-        <div class="card">
-          <h4>Timeline</h4>
-          <div class="timeline">
-            <div class="step" [class.done]="true">New</div>
-            <div class="step" [class.done]="sel.status === 'Prepared' || sel.status === 'Waiting for Delivery' || sel.status === 'Assigned' || sel.status === 'On The Way' || sel.status === 'Delivered'">Prepared</div>
-            <div class="step" [class.done]="sel.status === 'Waiting for Delivery' || sel.status === 'Assigned' || sel.status === 'On The Way' || sel.status === 'Delivered'">Waiting for Delivery</div>
-            <div class="step" [class.done]="sel.status === 'Assigned' || sel.status === 'On The Way' || sel.status === 'Delivered'">Assigned</div>
-            <div class="step" [class.done]="sel.status === 'On The Way' || sel.status === 'Delivered'">On The Way</div>
-            <div class="step" [class.done]="sel.status === 'Delivered'">Delivered</div>
-          </div>
-        </div>
+              <div *ngSwitchCase="'Waiting for Delivery'">
+                <div class="claim-zone">
+                  <div>
+                    <div class="label">Waiting for delivery drivers</div>
+                    <small class="muted">First available driver who claims gets assigned</small>
+                  </div>
+                  <div class="assign-actions">
+                    <button type="button" class="btn" (click)="simulateRandomClaim()">Simulate Claim</button>
+                  </div>
+                </div>
+                <div class="drivers-list">
+                  <div class="driver-row" *ngFor="let d of drivers">
+                    <div class="value">{{ d.name }} • {{ d.area }}</div>
+                    <button type="button" class="btn" [disabled]="!d.available" (click)="claimOrder(sel.id, d.id)">{{
+                      d.available ? 'Claim as ' + d.name : 'Busy' }}</button>
+                  </div>
+                </div>
+                <!-- TODO: Replace with OrdersService.claimOrder(orderId, driverId) -->
+              </div>
 
-        <!-- Delivery Workflow -->
-        <div class="card">
-          <h4>Delivery Workflow</h4>
-          <ng-container [ngSwitch]="sel.status">
-            <div *ngSwitchCase="'New'" class="assign-actions">
-              <button type="button" class="btn btn--primary" (click)="markPrepared()">Mark Prepared</button>
-            </div>
-
-            <div *ngSwitchCase="'Prepared'" class="assign-actions">
-              <button type="button" class="btn btn--primary" (click)="moveToWaitingForDelivery()">Move to Waiting for Delivery</button>
-            </div>
-
-            <div *ngSwitchCase="'Waiting for Delivery'">
-              <div class="claim-zone">
-                <div>
-                  <div class="label">Waiting for delivery drivers</div>
-                  <small class="muted">First available driver who claims gets assigned</small>
+              <div *ngSwitchCase="'Assigned'">
+                <div class="driver-lock" *ngIf="sel.assignedDriverId as did">
+                  Assigned to: <strong>{{ getDriverName(did) }}</strong>
                 </div>
                 <div class="assign-actions">
-                  <button type="button" class="btn" (click)="simulateRandomClaim()">Simulate Claim</button>
+                  <button type="button" class="btn btn--primary" (click)="startDelivery()">Start Delivery</button>
                 </div>
               </div>
-              <div class="drivers-list">
-                <div class="driver-row" *ngFor="let d of drivers">
-                  <div class="value">{{ d.name }} • {{ d.area }}</div>
-                  <button type="button" class="btn" [disabled]="!d.available" (click)="claimOrder(sel.id, d.id)">{{ d.available ? 'Claim as ' + d.name : 'Busy' }}</button>
+
+              <div *ngSwitchCase="'On The Way'">
+                <div class="assign-actions">
+                  <button type="button" class="btn btn--primary" (click)="markDelivered()">Mark Delivered</button>
                 </div>
               </div>
-              <!-- TODO: Replace with OrdersService.claimOrder(orderId, driverId) -->
-            </div>
 
-            <div *ngSwitchCase="'Assigned'">
-              <div class="driver-lock" *ngIf="sel.assignedDriverId as did">
-                Assigned to: <strong>{{ getDriverName(did) }}</strong>
+              <div *ngSwitchCase="'Delivered'">
+                <div class="muted">Order delivered. Workflow completed.</div>
               </div>
-              <div class="assign-actions">
-                <button type="button" class="btn btn--primary" (click)="startDelivery()">Start Delivery</button>
-              </div>
-            </div>
+            </ng-container>
+          </div>
 
-            <div *ngSwitchCase="'On The Way'">
-              <div class="assign-actions">
-                <button type="button" class="btn btn--primary" (click)="markDelivered()">Mark Delivered</button>
-              </div>
-            </div>
 
-            <div *ngSwitchCase="'Delivered'">
-              <div class="muted">Order delivered. Workflow completed.</div>
-            </div>
-          </ng-container>
-        </div>
 
-        
-
-        <!-- Map -->
-        <div class="card card--map" *ngIf="sel.status === 'On The Way' || sel.status === 'Delivered'">
-          <h4>Map</h4>
-          <div id="ordersMap" class="map"></div>
-          <!-- TODO: Real-time tracking via WebSocket to update driver location -->
+          <!-- Map -->
+          <div class="card card--map" *ngIf="sel.status === 'On The Way' || sel.status === 'Delivered'">
+            <h4>Map</h4>
+            <div id="ordersMap" class="map"></div>
+            <!-- TODO: Real-time tracking via WebSocket to update driver location -->
+          </div>
         </div>
       </div>
     </div>
-  </div>
   </ng-container>
 </section>

@@ -1,0 +1,135 @@
+<div class="stock-dashboard">
+
+    <!-- Header -->
+    <header class="page-header">
+        <div class="header-text">
+            <h1>Inventory Management</h1>
+            <p class="subtitle">Monitor stock levels and manage expirations</p>
+        </div>
+        <button class="btn-action">+ Add New Item</button>
+    </header>
+
+    <!-- 1. KPI Cards -->
+    <section class="kpi-row">
+        <div class="kpi-card">
+            <div class="kpi-label">Total SKUs</div>
+            <div class="kpi-val">{{ kpiTotalItems }}</div>
+        </div>
+        <div class="kpi-card card--warn" *ngIf="kpiLowStock > 0">
+            <div class="kpi-label">Low Stock Alerts</div>
+            <div class="kpi-val">{{ kpiLowStock }}</div>
+            <div class="kpi-hint">Requires Restock</div>
+        </div>
+        <div class="kpi-card card--danger" *ngIf="kpiOutOfStock > 0">
+            <div class="kpi-label">Out of Stock</div>
+            <div class="kpi-val">{{ kpiOutOfStock }}</div>
+            <div class="kpi-hint">Critical</div>
+        </div>
+        <div class="kpi-card card--exp" *ngIf="kpiExpiring > 0">
+            <div class="kpi-label">Expiring Soon</div>
+            <div class="kpi-val">{{ kpiExpiring }}</div>
+            <div class="kpi-hint">In 30 days</div>
+        </div>
+    </section>
+
+    <!-- 2. Filters -->
+    <section class="filters-bar">
+        <div class="search-wrap">
+            <span class="icon">🔍</span>
+            <input type="text" [(ngModel)]="searchTerm" (input)="applyFilters()" placeholder="Search by name, batch...">
+        </div>
+
+        <div class="filter-group">
+            <select [(ngModel)]="filterCategory" (change)="applyFilters()">
+                <option value="">All Categories</option>
+                <option value="Prescription">Prescription</option>
+                <option value="OTC">OTC</option>
+                <option value="Medical Device">Medical Device</option>
+                <option value="Parapharmacy">Parapharmacy</option>
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <select [(ngModel)]="filterStatus" (change)="applyFilters()">
+                <option value="All">All Statuses</option>
+                <option value="Low Stock">⚠ Low Stock</option>
+                <option value="Out of Stock">⛔ Out of Stock</option>
+                <option value="Expiring Soon">🕒 Expiring Soon</option>
+            </select>
+        </div>
+    </section>
+
+    <!-- 3. Inventory Table -->
+    <div class="inventory-shell">
+        <div class="table-header">
+            <h3>Current Inventory</h3>
+            <span class="count">{{ displayedStock.length }} items</span>
+        </div>
+
+        <div class="table-responsive">
+            <table class="stock-table">
+                <thead>
+                    <tr>
+                        <th class="col-item">Item Name</th>
+                        <th>Category</th>
+                        <th>Stock Level</th>
+                        <th>Quantity</th>
+                        <th>Status</th>
+                        <th>Expiry</th>
+                        <th>Location</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let item of displayedStock">
+                        <td class="col-item">
+                            <div class="item-cell">
+                                <div class="item-img"
+                                    [style.backgroundImage]="'url(' + (item.imageUrl || 'assets/placeholder.png') + ')'">
+                                </div>
+                                <div class="item-info">
+                                    <span class="item-name">{{ item.name }}</span>
+                                    <span class="item-sub">{{ item.batchNumber }}</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="cat-pill">{{ item.category }}</span>
+                        </td>
+                        <td class="col-progress">
+                            <div class="progress-bar-bg">
+                                <div class="progress-bar-fill" [style.width]="getProgressBarWidth(item)"
+                                    [style.backgroundColor]="getProgressBarColor(item)">
+                                </div>
+                            </div>
+                            <small class="progress-label">{{ item.quantity }} / {{ item.maxQuantity }}</small>
+                        </td>
+                        <td class="font-bold">{{ item.quantity }}</td>
+                        <td>
+                            <span class="status-badge" [class.st-out]="getStockStatus(item) === 'Out'"
+                                [class.st-low]="getStockStatus(item) === 'Low'"
+                                [class.st-ok]="getStockStatus(item) === 'OK'">
+                                {{ getStockStatus(item) === 'OK' ? 'Available' : getStockStatus(item) }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="expiry-cell" [class.exp-warn]="isExpiring(item)">
+                                {{ item.expiryDate | date:'mediumDate' }}
+                                <span class="exp-icon" *ngIf="isExpiring(item)">⚠</span>
+                            </div>
+                        </td>
+                        <td class="mono-xs">{{ item.location }}</td>
+                        <td>
+                            <button class="btn-icon" title="View Details">⋮</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="empty-state" *ngIf="displayedStock.length === 0">
+            <p>No inventory items found matching your filters.</p>
+        </div>
+    </div>
+
+</div>

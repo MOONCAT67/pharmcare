@@ -1,0 +1,155 @@
+<div class="emp-dashboard">
+
+    <!-- Header -->
+    <header class="page-header">
+        <div class="header-text">
+            <h1>Team & Staff</h1>
+            <p class="subtitle">Manage roles, shifts, and availability</p>
+        </div>
+        <button class="btn-action">+ Add Employee</button>
+    </header>
+
+    <!-- 1. KPI Row -->
+    <section class="kpi-row">
+        <div class="kpi-card">
+            <div class="kpi-icon">👥</div>
+            <div class="kpi-info">
+                <span class="kpi-label">Total Staff</span>
+                <span class="kpi-val">{{ kpiTotal }}</span>
+            </div>
+        </div>
+        <div class="kpi-card card--active">
+            <div class="kpi-icon">⚡</div>
+            <div class="kpi-info">
+                <span class="kpi-label">On Duty</span>
+                <span class="kpi-val">{{ kpiOnDuty }}</span>
+            </div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-icon">🩺</div>
+            <div class="kpi-info">
+                <span class="kpi-label">Pharmacists</span>
+                <span class="kpi-val">{{ kpiPharmacists }}</span>
+            </div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-icon">🛵</div>
+            <div class="kpi-info">
+                <span class="kpi-label">Drivers</span>
+                <span class="kpi-val">{{ kpiDelivery }}</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- 2. Filters -->
+    <section class="filters-bar">
+        <div class="search-wrap">
+            <span class="icon">🔍</span>
+            <input type="text" [(ngModel)]="searchTerm" (input)="applyFilters()" placeholder="Search staff...">
+        </div>
+
+        <div class="filter-group">
+            <select [(ngModel)]="filterRole" (change)="applyFilters()">
+                <option value="All">All Roles</option>
+                <option value="Pharmacist">Pharmacists</option>
+                <option value="Assistant">Assistants</option>
+                <option value="Delivery">Delivery Agents</option>
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <select [(ngModel)]="filterStatus" (change)="applyFilters()">
+                <option value="All">All Statuses</option>
+                <option value="Available">Available</option>
+                <option value="Busy">Busy</option>
+                <option value="Off-Duty">Off-Duty</option>
+            </select>
+        </div>
+    </section>
+
+    <!-- 3. Grid -->
+    <div class="content-area">
+        <div class="emp-grid">
+            <div class="emp-card" *ngFor="let emp of displayedEmployees" (click)="selectEmployee(emp)"
+                [class.selected]="selectedEmp === emp">
+
+                <div class="card-status-dot" [ngClass]="getStatusClass(emp.status)"></div>
+
+                <div class="emp-avatar" [style.backgroundImage]="'url(' + emp.photoUrl + ')'"></div>
+
+                <div class="emp-info">
+                    <h3 class="emp-name">{{ emp.fullName }}</h3>
+                    <div class="emp-role">
+                        <span class="role-icon">{{ getRoleIcon(emp.role) }}</span>
+                        {{ emp.role }}
+                    </div>
+                </div>
+
+                <div class="emp-metrics">
+                    <div class="metric-chip" [class.is-busy]="emp.activeTasks > 0">
+                        <span class="metric-val">{{ emp.activeTasks }}</span>
+                        <span class="metric-label">Active Tasks</span>
+                    </div>
+                </div>
+
+                <div class="emp-footer">
+                    <span class="status-badge" [ngClass]="getStatusClass(emp.status)">{{ emp.status }}</span>
+                    <button class="btn-more">View</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. Details Panel (Overlay/Side) -->
+        <div class="details-panel" [class.is-open]="selectedEmp">
+            <div class="panel-content" *ngIf="selectedEmp">
+                <button class="btn-close" (click)="closeDetails()">×</button>
+
+                <div class="panel-header">
+                    <div class="ph-avatar" [style.backgroundImage]="'url(' + selectedEmp.photoUrl + ')'"></div>
+                    <div class="ph-info">
+                        <h2>{{ selectedEmp.fullName }}</h2>
+                        <span class="ph-role">{{ selectedEmp.role }}</span>
+                        <span class="status-badge lg" [ngClass]="getStatusClass(selectedEmp.status)">{{
+                            selectedEmp.status }}</span>
+                    </div>
+                </div>
+
+                <div class="panel-body">
+                    <div class="info-group">
+                        <label>Contact</label>
+                        <div class="info-row icon-row">
+                            <span>📞</span> {{ selectedEmp.phone }}
+                        </div>
+                        <div class="info-row icon-row">
+                            <span>📧</span> {{ selectedEmp.email }}
+                        </div>
+                    </div>
+
+                    <div class="info-group">
+                        <label>Current Shift</label>
+                        <div class="info-row">
+                            <span class="shift-box">🕒 {{ selectedEmp.shiftStr }}</span>
+                        </div>
+                    </div>
+
+                    <div class="info-group">
+                        <label>Workload</label>
+                        <div class="workload-card">
+                            <div class="wl-num">{{ selectedEmp.activeTasks }}</div>
+                            <div class="wl-label">Current assignments</div>
+                            <p class="wl-desc" *ngIf="selectedEmp.role === 'Delivery'">Deliveries in progress</p>
+                            <p class="wl-desc" *ngIf="selectedEmp.role !== 'Delivery'">Orders being prepared</p>
+                        </div>
+                    </div>
+
+                    <div class="info-group mt-auto">
+                        <label>System Info</label>
+                        <div class="info-row smaller">ID: {{ selectedEmp.id }}</div>
+                        <div class="info-row smaller">Joined: {{ selectedEmp.joinedDate | date:'MMMM y' }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>

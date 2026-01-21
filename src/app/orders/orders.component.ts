@@ -25,6 +25,7 @@ export interface Medicine {
   intakeTimes: {             // timing checkboxes
     morning: boolean;
     noon: boolean;
+    evening: boolean;        // Added for new UI
     night: boolean;
     beforeMeals: boolean;
   };
@@ -99,7 +100,7 @@ export class OrdersComponent implements OnInit, AfterViewInit {
   private map: any | null = null;
   private mapReady = false;
 
-  constructor(@Inject(PLATFORM_ID) private platformId: Object) {}
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) { }
 
   ngOnInit(): void {
     this.seedMockData();
@@ -136,7 +137,7 @@ export class OrdersComponent implements OnInit, AfterViewInit {
       imageUrl: img,
       existsInStock: exists,
       dosage: '',
-      intakeTimes: { morning: false, noon: false, night: false, beforeMeals: false },
+      intakeTimes: { morning: false, noon: false, evening: false, night: false, beforeMeals: false },
       frequency: '',
       duration: '',
       warnings: '',
@@ -151,7 +152,7 @@ export class OrdersComponent implements OnInit, AfterViewInit {
         prescriptionImageUrl: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?q=80&w=800&auto=format&fit=crop',
         medicines: [
           med('m1', 'Amoxicillin 500mg', true, 'https://images.unsplash.com/photo-1584362917165-526a968579e8?q=80&w=400&auto=format&fit=crop',
-            { dosage: '500mg', frequency: '3x/day', duration: '7 days', intakeTimes: { morning: true, noon: true, night: true, beforeMeals: false }, recipeValidated: true }),
+            { dosage: '500mg', frequency: '3x/day', duration: '7 days', intakeTimes: { morning: true, noon: true, evening: false, night: true, beforeMeals: false }, recipeValidated: true }),
           med('m2', 'Vitamin D3 1000IU', true, 'https://images.unsplash.com/photo-1544989164-31dc3c645987?q=80&w=400&auto=format&fit=crop')
         ]
       },
@@ -159,20 +160,20 @@ export class OrdersComponent implements OnInit, AfterViewInit {
         id: 'O-3002', client: clients[1], type: 'Prescription', status: 'New', time: '10:05', items: ['Ibuprofen 400mg'],
         prescriptionImageUrl: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?q=80&w=800&auto=format&fit=crop',
         medicines: [
-          med('m3', 'Ibuprofen 400mg', true, undefined, { dosage: '400mg', frequency: '2x/day', duration: '5 days', intakeTimes: { morning: true, noon: false, night: true, beforeMeals: false }, warnings: 'Avoid if gastric issues', recipeValidated: true })
+          med('m3', 'Ibuprofen 400mg', true, undefined, { dosage: '400mg', frequency: '2x/day', duration: '5 days', intakeTimes: { morning: true, noon: false, evening: false, night: true, beforeMeals: false }, warnings: 'Avoid if gastric issues', recipeValidated: true })
         ]
       },
       {
         id: 'O-3003', client: clients[2], type: 'Prescription', status: 'Waiting for Delivery', time: '10:22', items: ['Paracetamol 1g', 'Cough Syrup'],
         medicines: [
-          med('m4', 'Paracetamol 1g', true, undefined, { dosage: '1g', frequency: '3x/day', duration: '3 days', intakeTimes: { morning: true, noon: true, night: true, beforeMeals: false }, recipeValidated: true }),
-          med('m5', 'Cough Syrup 200ml', true, undefined, { dosage: '10ml', frequency: '1x/night', duration: '5 days', intakeTimes: { morning: false, noon: false, night: true, beforeMeals: false }, recipeValidated: true })
+          med('m4', 'Paracetamol 1g', true, undefined, { dosage: '1g', frequency: '3x/day', duration: '3 days', intakeTimes: { morning: true, noon: true, evening: false, night: true, beforeMeals: false }, recipeValidated: true }),
+          med('m5', 'Cough Syrup 200ml', true, undefined, { dosage: '10ml', frequency: '1x/night', duration: '5 days', intakeTimes: { morning: false, noon: false, evening: false, night: true, beforeMeals: false }, recipeValidated: true })
         ]
       },
       {
         id: 'O-3004', client: clients[3], type: 'Prescription', status: 'Assigned', time: '11:01', items: ['Vitamin C 1000mg'],
         medicines: [
-          med('m6', 'Vitamin C 1000mg', true, undefined, { dosage: '1000mg', frequency: '1x/day', duration: '14 days', intakeTimes: { morning: true, noon: false, night: false, beforeMeals: false }, recipeValidated: true })
+          med('m6', 'Vitamin C 1000mg', true, undefined, { dosage: '1000mg', frequency: '1x/day', duration: '14 days', intakeTimes: { morning: true, noon: false, evening: false, night: false, beforeMeals: false }, recipeValidated: true })
         ],
         pickupCode: '824193',
         assignedDriverId: 'd3'
@@ -187,9 +188,9 @@ export class OrdersComponent implements OnInit, AfterViewInit {
     ];
 
     this.drivers = [
-      { id: 'd1', name: 'Driver A', area: 'Center', available: true,  lat: 36.81, lng: 10.19 },
-      { id: 'd2', name: 'Driver B', area: 'North',  available: false, lat: 36.87, lng: 10.26 },
-      { id: 'd3', name: 'Driver C', area: 'West',   available: true,  lat: 36.80, lng: 10.17 },
+      { id: 'd1', name: 'Driver A', area: 'Center', available: true, lat: 36.81, lng: 10.19 },
+      { id: 'd2', name: 'Driver B', area: 'North', available: false, lat: 36.87, lng: 10.26 },
+      { id: 'd3', name: 'Driver C', area: 'West', available: true, lat: 36.80, lng: 10.17 },
     ];
   }
 
@@ -312,7 +313,7 @@ export class OrdersComponent implements OnInit, AfterViewInit {
   }
 
   isMedicineComplete(m: Medicine): boolean {
-    const hasTiming = m.intakeTimes.morning || m.intakeTimes.noon || m.intakeTimes.night || m.intakeTimes.beforeMeals;
+    const hasTiming = m.intakeTimes.morning || m.intakeTimes.noon || m.intakeTimes.evening || m.intakeTimes.night || m.intakeTimes.beforeMeals;
     return !!(m.existsInStock && m.dosage && m.frequency && m.duration && hasTiming);
   }
 
@@ -434,8 +435,8 @@ export class OrdersComponent implements OnInit, AfterViewInit {
       toRemove.forEach(l => this.map!.removeLayer(l));
 
       const pharmacyIcon = L.divIcon({ className: 'marker', html: '<div class="pin pin--green"></div>', iconSize: [24, 24], iconAnchor: [12, 24] });
-      const clientIcon   = L.divIcon({ className: 'marker', html: '<div class="pin pin--red"></div>',   iconSize: [22, 22], iconAnchor: [11, 22] });
-      const driverIcon   = L.divIcon({ className: 'marker', html: '<div class="pin pin--blue"></div>',  iconSize: [22, 22], iconAnchor: [11, 22] });
+      const clientIcon = L.divIcon({ className: 'marker', html: '<div class="pin pin--red"></div>', iconSize: [22, 22], iconAnchor: [11, 22] });
+      const driverIcon = L.divIcon({ className: 'marker', html: '<div class="pin pin--blue"></div>', iconSize: [22, 22], iconAnchor: [11, 22] });
 
       // Pharmacy
       L.marker([this.pharmacy.lat, this.pharmacy.lng], { icon: pharmacyIcon }).addTo(this.map).bindPopup('Pharmacy');
